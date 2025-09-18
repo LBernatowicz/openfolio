@@ -1,9 +1,12 @@
+import { Briefcase } from "lucide-react";
 import SectionWrapper from "../ui/SectionWrapper";
 
 export default function ExperienceSection() {
   return (
-    <SectionWrapper width={1} height={3}>
-        <h2 className="text-2xl font-bold mb-6 text-white">Doświadczenie</h2>
+    <SectionWrapper width={1} height={1} style={{gridRow: '4'}}>
+        <div className="flex items-center gap-2 mb-6">
+          <h2 className="text-xl font-bold text-white whitespace-nowrap">Expirience</h2>
+        </div>
         <div className="space-y-4">
           <div className="border-l-2 border-blue-500 pl-4">
             <h3 className="font-semibold text-white">Software Engineer</h3>

@@ -1,10 +1,13 @@
-import { Mail, MapPin, Linkedin, Github, Instagram, ExternalLink } from "lucide-react";
+import { Mail, MapPin, Linkedin, Github, Instagram, ExternalLink, MessageCircle } from "lucide-react";
 import SectionWrapper from "../ui/SectionWrapper";
 
 export default function ContactSection() {
   return (
-    <SectionWrapper width={1} height={2}>
-        <h2 className="text-2xl font-bold mb-6 text-white">Zacznijmy współpracę!</h2>
+    <SectionWrapper width={3} height={1} hasExternalLink={true} style={{gridRow: '4'}}>
+        <div className="flex items-center gap-2 mb-6">
+          <MessageCircle className="w-6 h-6 text-blue-500 flex-shrink-0" />
+          <h2 className="text-xl font-bold text-white whitespace-nowrap">Zacznijmy współpracę!</h2>
+        </div>
         <div className="space-y-4 mb-6">
           <div className="flex items-center gap-2">
             <Mail className="w-4 h-4" />

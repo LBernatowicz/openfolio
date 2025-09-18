@@ -76,6 +76,15 @@ body {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
+/* Card hover effects for external links - only border highlight */
+.card-hover-border {
+  transition: border-color 0.3s ease;
+}
+
+.card-hover-border:hover {
+  border-color: #3b82f6;
+}
+
 /* Gradient text */
 .gradient-text {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
@@ -126,12 +135,56 @@ a:focus-visible {
 .col-span-3 { grid-column: span 3 / span 3; }
 .col-span-4 { grid-column: span 4 / span 4; }
 
+/* Special positioning for columns */
+.col-start-1 { grid-column-start: 1; }
+.col-start-2 { grid-column-start: 2; }
+.col-start-3 { grid-column-start: 3; }
+.col-start-4 { grid-column-start: 4; }
+.col-start-5 { grid-column-start: 5; }
+
+/* Special positioning for rows */
+.row-start-1 { grid-row-start: 1; }
+.row-start-2 { grid-row-start: 2; }
+.row-start-3 { grid-row-start: 3; }
+.row-start-4 { grid-row-start: 4; }
+.row-start-5 { grid-row-start: 5; }
+.row-start-6 { grid-row-start: 6; }
+
 /* Grid row spans */
-.row-span-0\.5 { grid-row: span 0.5 / span 0.5; }
 .row-span-1 { grid-row: span 1 / span 1; }
-.row-span-1\.5 { grid-row: span 1.5 / span 1.5; }
 .row-span-2 { grid-row: span 2 / span 2; }
 .row-span-3 { grid-row: span 3 / span 3; }
 .row-span-4 { grid-row: span 4 / span 4; }
 .row-span-5 { grid-row: span 5 / span 5; }
 .row-span-6 { grid-row: span 6 / span 6; }
+
+/* Responsive Design */
+/* Mobile styles (default) */
+@media (max-width: 767px) {
+  /* Ensure proper spacing on mobile */
+  .grid {
+    gap: 1rem;
+  }
+  
+  /* Adjust padding for mobile */
+  .container {
+    padding: 1rem;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Tablet specific adjustments */
+  .grid {
+    gap: 1.5rem;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  /* Desktop specific styles - keep original */
+  .grid {
+    gap: 1.5rem;
+  }
+}
+
