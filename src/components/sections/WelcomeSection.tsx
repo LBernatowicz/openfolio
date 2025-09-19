@@ -1,9 +1,9 @@
 import { Hand, Github, Linkedin, Mail } from "lucide-react";
-import SectionWrapper from "../ui/SectionWrapper";
+import Image from "next/image";
 
 export default function WelcomeSection() {
   return (
-    <SectionWrapper width={3} height={1}>
+    <div>
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
           <div className="flex-1">
             <h1 className="text-4xl lg:text-5xl font-bold mb-3 text-white">
@@ -15,23 +15,28 @@ export default function WelcomeSection() {
               Tworzę piękne i funkcjonalne interfejsy, zawsze szukam nowych wyzwań.
             </p>
             <div className="flex gap-4">
-              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
+              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer">
                 <Hand className="w-6 h-6" />
               </button>
-              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
+              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer">
                 <Linkedin className="w-6 h-6" />
               </button>
-              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors">
+              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer">
                 <Mail className="w-6 h-6" />
               </button>
             </div>
           </div>
-          <div className="w-32 h-32 lg:w-40 lg:h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-            <div className="w-24 h-24 lg:w-32 lg:h-32 bg-gray-800 rounded-xl flex items-center justify-center">
-              <span className="text-2xl lg:text-3xl">👨‍💻</span>
-            </div>
+          <div className="w-40 h-40 lg:w-48 lg:h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center overflow-hidden">
+            <Image
+              src="/bitmoji.png"
+              alt="Łukasz Bernatowicz"
+              width={192}
+              height={192}
+              className="w-full h-full object-cover rounded-2xl"
+              priority
+            />
           </div>
         </div>
-    </SectionWrapper>
+    </div>
   );
 }

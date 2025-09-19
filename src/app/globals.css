@@ -66,19 +66,20 @@ body {
   animation-delay: 2s;
 }
 
-/* Card hover effects */
+/* Card hover effects - only for cards without external links */
 .card-hover {
   transition: all 0.3s ease;
 }
 
+/* Remove hover effects for cards without external links */
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  /* No transform or box-shadow - cards stay in place */
 }
 
 /* Card hover effects for external links - only border highlight */
 .card-hover-border {
   transition: border-color 0.3s ease;
+  cursor: pointer;
 }
 
 .card-hover-border:hover {

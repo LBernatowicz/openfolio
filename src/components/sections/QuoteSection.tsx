@@ -25,6 +25,20 @@ const quotes = [
 
 export default function QuoteSection() {
   const [currentQuote, setCurrentQuote] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Opóźnienie bazowe + losowe dla płynności
+    const baseDelay = 200; // 200ms bazowe opóźnienie
+    const randomDelay = Math.random() * 800; // 0-800ms losowe
+    const totalDelay = baseDelay + randomDelay;
+    
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, totalDelay);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,8 +54,14 @@ export default function QuoteSection() {
 
   return (
     <VerticalGroup width={2} height={2} colStart={1} rowStart={6}>
-      <div className="bg-black border border-slate-700 rounded-2xl p-4 card-hover">
-        <div className="text-center w-full">
+      <div className={`bg-transparent border border-slate-700 rounded-2xl p-4 transition-all duration-700 ease-out relative z-20 ${
+        isVisible 
+          ? 'opacity-100 transform translate-y-0' 
+          : 'opacity-0 transform translate-y-8'
+      }`}>
+        {/* Tło wewnątrz sekcji zasłaniające światło */}
+        <div className="absolute inset-0 bg-black rounded-2xl -z-10"></div>
+        <div className="text-center w-full relative z-10">
           <blockquote className="text-base italic text-gray-300 mb-2 min-h-[40px] flex items-center justify-center">
             "{quotes[currentQuote].text}"
           </blockquote>

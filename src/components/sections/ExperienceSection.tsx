@@ -5,6 +5,7 @@ export default function ExperienceSection() {
   return (
     <SectionWrapper width={1} height={1} style={{gridRow: '4'}}>
         <div className="flex items-center gap-2 mb-6">
+          <Briefcase className="w-6 h-6 text-blue-500 flex-shrink-0" />
           <h2 className="text-xl font-bold text-white whitespace-nowrap">Expirience</h2>
         </div>
         <div className="space-y-4">

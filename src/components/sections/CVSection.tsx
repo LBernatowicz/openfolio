@@ -14,7 +14,7 @@ export default function CVSection() {
         <p className="text-gray-300 text-sm mb-4">
           Zobacz i pobierz moje CV klikając przycisk poniżej
         </p>
-        <button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+        <button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer">
           <Download className="w-4 h-4" />
           Pobierz CV
         </button>

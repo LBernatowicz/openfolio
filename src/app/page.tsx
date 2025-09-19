@@ -8,15 +8,22 @@ import QuoteTimezoneGroup from "@/components/sections/QuoteTimezoneGroup";
 import ContactSection from "@/components/sections/ContactSection";
 import ProjectsSection from "@/components/sections/ProjectsSection";
 import NowSection from "@/components/sections/NowSection";
+import Navbar from "@/components/ui/Navbar";
+import CursorLight from "@/components/ui/CursorLight";
+import WelcomeCard from "@/components/ui/WelcomeCard";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Navbar />
+      <CursorLight />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         {/* Responsive Grid Layout - Desktop: 4 cols, Tablet: 2 cols, Mobile: 1 col */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" style={{gridTemplateRows: 'repeat(4, minmax(0, auto))'}}>
           {/* Pierwszy rząd */}
-          <WelcomeSection />
+          <WelcomeCard width={3} height={1}>
+            <WelcomeSection />
+          </WelcomeCard>
           <AboutSection />
           
           {/* Drugi rząd - Portfolio i Projects bezpośrednio pod Welcome */}
