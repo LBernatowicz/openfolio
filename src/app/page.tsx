@@ -6,7 +6,6 @@ import ExperienceSection from "@/components/sections/ExperienceSection";
 import StudySection from "@/components/sections/StudySection";
 import QuoteTimezoneGroup from "@/components/sections/QuoteTimezoneGroup";
 import ContactSection from "@/components/sections/ContactSection";
-import ProjectsSection from "@/components/sections/ProjectsSection";
 import NowSection from "@/components/sections/NowSection";
 import Navbar from "@/components/ui/Navbar";
 import CursorLight from "@/components/ui/CursorLight";
@@ -26,9 +25,8 @@ export default function Home() {
           </WelcomeCard>
           <AboutSection />
           
-          {/* Drugi rząd - Portfolio i Projects bezpośrednio pod Welcome */}
+          {/* Drugi rząd - Portfolio i Now bezpośrednio pod Welcome */}
           <PortfolioSection />
-          <ProjectsSection />
           <NowSection />
           
           {/* Trzeci rząd */}
