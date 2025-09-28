@@ -14,6 +14,17 @@ export interface ProjectEntry {
   content: string;
   date: string;
   image?: string;
+  comments: Comment[];
+}
+
+export interface Comment {
+  id: string;
+  author: string;
+  content: string;
+  date: string;
+  parentId?: string; // dla odpowiedzi na komentarze
+  likes: number;
+  isLiked?: boolean;
 }
 
 export interface Project {
@@ -27,6 +38,7 @@ export interface Project {
   status: 'completed' | 'in-progress' | 'planned';
   githubUrl?: string;
   liveUrl?: string;
+  comments: Comment[];
 }
 
 

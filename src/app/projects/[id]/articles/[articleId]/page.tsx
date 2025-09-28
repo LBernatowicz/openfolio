@@ -3,36 +3,78 @@
 import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { mockProjects } from "../../../../../data/projects";
 import { notFound } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, use } from "react";
+import { Comment } from "../../../../../types/section";
+import CommentSection from "../../../../../components/ui/CommentSection";
+import MarkdownRenderer from "../../../../../components/ui/MarkdownRenderer";
+import { useGitHubProjects } from "../../../../../hooks/useGitHubData";
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     id: string;
     articleId: string;
-  };
+  }>;
 }
 
 export default function ArticlePage({ params }: ArticlePageProps) {
   const router = useRouter();
-  const project = mockProjects.find(p => p.id === params.id);
   const [showToc, setShowToc] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
+  const firstParagraphRef = useRef<HTMLParagraphElement>(null);
+  const [tocItems, setTocItems] = useState<Array<{id: string, text: string, level: number}>>([]);
   
-  if (!project) {
-    notFound();
-  }
+  // Unwrap params Promise
+  const { id, articleId } = use(params);
 
-  const article = project.entries.find(e => e.id === params.articleId);
-  
-  if (!article) {
-    notFound();
-  }
+  // Use GitHub API
+  const { projects, loading, error } = useGitHubProjects();
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  // Find project and article
+  const project = projects.find(p => p.id === id);
+  const article = project?.entries?.find(e => e.id === articleId);
+
+  // Generate table of contents from markdown content
+  const generateToc = (content: string) => {
+    const headings = content.match(/^#{1,6}\s+(.+)$/gm);
+    if (!headings) return [];
+    
+    return headings.map((heading, index) => {
+      const level = heading.match(/^#+/)?.[0].length || 1;
+      const text = heading.replace(/^#+\s+/, '');
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .trim();
+      
+      return { id, text, level };
+    });
+  };
+
+  // Initialize comments from article
+  useEffect(() => {
+    if (article?.comments) {
+      setComments(article.comments);
+    }
+  }, [article]);
+
+  // Generate table of contents when article content changes
+  useEffect(() => {
+    if (article?.content) {
+      const toc = generateToc(article.content);
+      console.log('Generated TOC items:', toc);
+      console.log('Article content preview:', article.content.substring(0, 200));
+      setTocItems(toc);
+    }
+  }, [article?.content]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
+        console.log('First paragraph intersection:', entry.isIntersecting);
+        console.log('Setting showToc to:', entry.isIntersecting);
         setShowToc(entry.isIntersecting);
       },
       {
@@ -41,16 +83,55 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       }
     );
 
-    if (articleRef.current) {
-      observer.observe(articleRef.current);
+    if (firstParagraphRef.current) {
+      observer.observe(firstParagraphRef.current);
     }
 
     return () => {
-      if (articleRef.current) {
-        observer.unobserve(articleRef.current);
+      if (firstParagraphRef.current) {
+        observer.unobserve(firstParagraphRef.current);
       }
     };
-  }, []);
+  }, [article?.content]);
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Ładowanie artykułu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Błąd podczas ładowania artykułu</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Spróbuj ponownie
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!project) {
+    console.log('❌ Project not found:', id);
+    console.log('📋 Available projects:', projects.map(p => p.id));
+    notFound();
+  }
+
+  if (!article) {
+    console.log('❌ Article not found:', articleId);
+    console.log('📝 Available articles:', project.entries?.map(e => e.id));
+    notFound();
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pl-PL', {
@@ -61,7 +142,36 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   };
 
   const getArticleIndex = () => {
-    return project.entries.findIndex(e => e.id === params.articleId) + 1;
+    return project.entries.findIndex(e => e.id === articleId) + 1;
+  };
+
+  const handleAddComment = (content: string, parentId?: string) => {
+    const newComment: Comment = {
+      id: Date.now().toString(),
+      author: 'Użytkownik',
+      content,
+      date: new Date().toISOString(),
+      parentId,
+      likes: 0,
+      isLiked: false
+    };
+    setComments(prev => [...prev, newComment]);
+  };
+
+  const handleLikeComment = (commentId: string) => {
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId 
+        ? { 
+            ...comment, 
+            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+            isLiked: !comment.isLiked 
+          }
+        : comment
+    ));
+  };
+
+  const handleReplyToComment = (commentId: string, content: string) => {
+    handleAddComment(content, commentId);
   };
 
   return (
@@ -71,7 +181,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
-              onClick={() => router.push(`/projects/${params.id}`)}
+              onClick={() => router.push(`/projects/${id}`)}
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-200 group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-200" />
@@ -90,88 +200,91 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         {/* Article Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-slate-400 text-sm font-mono">CHANGELOG.md</span>
+        <div className="mb-12 relative overflow-hidden rounded-2xl">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url(${article.image || '/next.svg'})`,
+                filter: 'blur(2px) brightness(0.3)'
+              }}
+            ></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/30 to-slate-900/60"></div>
           </div>
           
-          <h1 className="text-4xl font-bold text-white mb-4">{article.title}</h1>
-          
-          <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>{formatDate(article.date)}</span>
+          {/* Content */}
+          <div className="relative z-10 p-8 sm:p-12 lg:p-16">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-slate-300 text-sm font-mono">CHANGELOG.md</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Artykuł #{getArticleIndex()}</span>
+            
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
+              {article.title}
+            </h1>
+            
+            <div className="flex items-center gap-4 text-sm text-gray-300 mb-6">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>{formatDate(article.date)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>Artykuł #{getArticleIndex()}</span>
+              </div>
             </div>
           </div>
-
-          <p className="text-xl text-gray-300 leading-relaxed">
-            {article.content}
-          </p>
         </div>
 
-        {/* Article Image */}
-        {article.image && (
-          <div className="mb-12">
-            <div className="relative w-full h-64 lg:h-80 rounded-2xl overflow-hidden bg-slate-800">
-              <Image
-                src={article.image}
-                alt={article.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Article Content with Sidebar */}
         <div className="relative">
           {/* Table of Contents - Fixed Position with Scroll Detection */}
-          <div className={`hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-300 ${
-            showToc ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-          }`}>
-            <div className="bg-slate-900/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 w-64">
-              <h3 className="text-lg font-semibold text-white mb-4">Spis treści</h3>
-              <nav className="space-y-2">
-                <a href="#szczegoly" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Szczegóły implementacji
-                </a>
-                <a href="#zrobione" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Co zostało zrobione
-                </a>
-                <a href="#technologie" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Technologie użyte
-                </a>
-                <a href="#nastepne" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Następne kroki
-                </a>
-                <a href="#info" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Informacje
-                </a>
-              </nav>
+          {console.log('TOC render - showToc:', showToc, 'tocItems.length:', tocItems.length, 'firstParagraphRef:', firstParagraphRef.current)}
+          {tocItems.length > 0 && (
+            <div className={`hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-300 opacity-100 translate-x-0`}>
+              <div className="bg-slate-900/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 w-64">
+                <h3 className="text-lg font-semibold text-white mb-4">Spis treści</h3>
+                <nav className="space-y-1">
+                  {tocItems.map((item, index) => (
+                    <a 
+                      key={index}
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const element = document.getElementById(item.id);
+                        if (element) {
+                          const offset = -300; // 20px from top
+                          const elementPosition = element.offsetTop - offset;
+                          window.scrollTo({
+                            top: elementPosition,
+                            behavior: 'smooth'
+                          });
+                        }
+                      }}
+                      className={`block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1 ${
+                        item.level === 1 ? 'font-medium' : 
+                        item.level === 2 ? 'ml-2' : 
+                        item.level === 3 ? 'ml-4' : 'ml-6'
+                      }`}
+                    >
+                      {item.text}
+                    </a>
+                  ))}
+                </nav>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Article Content - Full Container Width */}
           <article ref={articleRef} className="prose prose-invert max-w-none">
             <div className="bg-slate-900/30 backdrop-blur-sm rounded-3xl p-8 border border-slate-800/50">
-              <div className="text-gray-300 leading-relaxed">
-                <h2 id="szczegoly" className="text-2xl font-bold text-white mb-6">Szczegóły implementacji</h2>
-                
-                <p className="text-lg mb-6">
-                  Ten artykuł zawiera szczegółowe informacje o implementacji <strong>{article.title.toLowerCase()}</strong> w projekcie {project.title}.
-                </p>
-
-                <h3 id="zrobione" className="text-xl font-semibold text-blue-400 mb-4">Co zostało zrobione</h3>
-                <p className="mb-6">
-                  {article.content}
-                </p>
-
-                <h3 id="technologie" className="text-xl font-semibold text-blue-400 mb-4">Technologie użyte</h3>
+              <MarkdownRenderer content={article.content} firstParagraphRef={firstParagraphRef} />
+              
+              {/* Additional project info */}
+              <div className="mt-8 pt-6 border-t border-slate-700">
+                <h3 className="text-xl font-semibold text-blue-400 mb-4">Technologie użyte</h3>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.technologies.map((tech) => (
                     <span
@@ -183,12 +296,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                   ))}
                 </div>
 
-                <h3 id="nastepne" className="text-xl font-semibold text-blue-400 mb-4">Następne kroki</h3>
-                <p className="mb-6">
-                  Po zakończeniu tej implementacji planowane są dalsze ulepszenia i optymalizacje projektu.
-                </p>
-
-                <div id="info" className="bg-slate-800/50 rounded-lg p-4 mt-8">
+                <div className="bg-slate-800/50 rounded-lg p-4">
                   <p className="text-sm text-gray-400 mb-2">
                     <strong>Data publikacji:</strong> {formatDate(article.date)}
                   </p>
@@ -204,7 +312,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         {/* Navigation */}
         <div className="mt-12 flex justify-between items-center">
           <button
-            onClick={() => router.push(`/projects/${params.id}`)}
+            onClick={() => router.push(`/projects/${id}`)}
             className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -234,6 +342,18 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 <span>Live Demo</span>
               </a>
             )}
+          </div>
+        </div>
+
+        {/* Sekcja komentarzy */}
+        <div className="mt-16">
+          <div className="max-w-4xl mx-auto">
+            <CommentSection
+              comments={comments}
+              onAddComment={handleAddComment}
+              onLikeComment={handleLikeComment}
+              onReplyToComment={handleReplyToComment}
+            />
           </div>
         </div>
       </div>
