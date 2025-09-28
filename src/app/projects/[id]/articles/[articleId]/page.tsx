@@ -3,32 +3,82 @@
 import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { mockProjects } from "../../../../../data/projects";
 import { notFound } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, use } from "react";
+import { Comment } from "../../../../../types/section";
+import CommentSection from "../../../../../components/ui/CommentSection";
+import MarkdownRenderer from "../../../../../components/ui/MarkdownRenderer";
+import { useGitHubProjects } from "../../../../../hooks/useGitHubData";
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     id: string;
     articleId: string;
-  };
+  }>;
 }
 
 export default function ArticlePage({ params }: ArticlePageProps) {
   const router = useRouter();
-  const project = mockProjects.find(p => p.id === params.id);
   const [showToc, setShowToc] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   
+  // Unwrap params Promise
+  const { id, articleId } = use(params);
+
+  // Use GitHub API
+  const { projects, loading, error } = useGitHubProjects();
+  const [comments, setComments] = useState<Comment[]>([]);
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Ładowanie artykułu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Błąd podczas ładowania artykułu</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Spróbuj ponownie
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Find project and article
+  const project = projects.find(p => p.id === id);
+  
   if (!project) {
+    console.log('❌ Project not found:', id);
+    console.log('📋 Available projects:', projects.map(p => p.id));
     notFound();
   }
 
-  const article = project.entries.find(e => e.id === params.articleId);
+  const article = project.entries?.find(e => e.id === articleId);
   
   if (!article) {
+    console.log('❌ Article not found:', articleId);
+    console.log('📝 Available articles:', project.entries?.map(e => e.id));
     notFound();
   }
+
+  // Initialize comments from article
+  useEffect(() => {
+    if (article?.comments) {
+      setComments(article.comments);
+    }
+  }, [article]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -61,7 +111,36 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   };
 
   const getArticleIndex = () => {
-    return project.entries.findIndex(e => e.id === params.articleId) + 1;
+    return project.entries.findIndex(e => e.id === articleId) + 1;
+  };
+
+  const handleAddComment = (content: string, parentId?: string) => {
+    const newComment: Comment = {
+      id: Date.now().toString(),
+      author: 'Użytkownik',
+      content,
+      date: new Date().toISOString(),
+      parentId,
+      likes: 0,
+      isLiked: false
+    };
+    setComments(prev => [...prev, newComment]);
+  };
+
+  const handleLikeComment = (commentId: string) => {
+    setComments(prev => prev.map(comment => 
+      comment.id === commentId 
+        ? { 
+            ...comment, 
+            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+            isLiked: !comment.isLiked 
+          }
+        : comment
+    ));
+  };
+
+  const handleReplyToComment = (commentId: string, content: string) => {
+    handleAddComment(content, commentId);
   };
 
   return (
@@ -71,7 +150,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
-              onClick={() => router.push(`/projects/${params.id}`)}
+              onClick={() => router.push(`/projects/${id}`)}
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-200 group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-200" />
@@ -109,9 +188,9 @@ export default function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
 
-          <p className="text-xl text-gray-300 leading-relaxed">
-            {article.content}
-          </p>
+          <div className="text-xl text-gray-300 leading-relaxed">
+            <MarkdownRenderer content={article.content} />
+          </div>
         </div>
 
         {/* Article Image */}
@@ -159,19 +238,11 @@ export default function ArticlePage({ params }: ArticlePageProps) {
           {/* Article Content - Full Container Width */}
           <article ref={articleRef} className="prose prose-invert max-w-none">
             <div className="bg-slate-900/30 backdrop-blur-sm rounded-3xl p-8 border border-slate-800/50">
-              <div className="text-gray-300 leading-relaxed">
-                <h2 id="szczegoly" className="text-2xl font-bold text-white mb-6">Szczegóły implementacji</h2>
-                
-                <p className="text-lg mb-6">
-                  Ten artykuł zawiera szczegółowe informacje o implementacji <strong>{article.title.toLowerCase()}</strong> w projekcie {project.title}.
-                </p>
-
-                <h3 id="zrobione" className="text-xl font-semibold text-blue-400 mb-4">Co zostało zrobione</h3>
-                <p className="mb-6">
-                  {article.content}
-                </p>
-
-                <h3 id="technologie" className="text-xl font-semibold text-blue-400 mb-4">Technologie użyte</h3>
+              <MarkdownRenderer content={article.content} />
+              
+              {/* Additional project info */}
+              <div className="mt-8 pt-6 border-t border-slate-700">
+                <h3 className="text-xl font-semibold text-blue-400 mb-4">Technologie użyte</h3>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.technologies.map((tech) => (
                     <span
@@ -183,12 +254,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                   ))}
                 </div>
 
-                <h3 id="nastepne" className="text-xl font-semibold text-blue-400 mb-4">Następne kroki</h3>
-                <p className="mb-6">
-                  Po zakończeniu tej implementacji planowane są dalsze ulepszenia i optymalizacje projektu.
-                </p>
-
-                <div id="info" className="bg-slate-800/50 rounded-lg p-4 mt-8">
+                <div className="bg-slate-800/50 rounded-lg p-4">
                   <p className="text-sm text-gray-400 mb-2">
                     <strong>Data publikacji:</strong> {formatDate(article.date)}
                   </p>
@@ -204,7 +270,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         {/* Navigation */}
         <div className="mt-12 flex justify-between items-center">
           <button
-            onClick={() => router.push(`/projects/${params.id}`)}
+            onClick={() => router.push(`/projects/${id}`)}
             className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -234,6 +300,18 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 <span>Live Demo</span>
               </a>
             )}
+          </div>
+        </div>
+
+        {/* Sekcja komentarzy */}
+        <div className="mt-16">
+          <div className="max-w-4xl mx-auto">
+            <CommentSection
+              comments={comments}
+              onAddComment={handleAddComment}
+              onLikeComment={handleLikeComment}
+              onReplyToComment={handleReplyToComment}
+            />
           </div>
         </div>
       </div>

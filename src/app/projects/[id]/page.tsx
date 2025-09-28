@@ -3,9 +3,12 @@
 import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { mockProjects } from "../../../data/projects";
-import { Project, ProjectEntry } from "../../../types/section";
+import { useGitHubProjects, useProjectComments } from "../../../hooks/useGitHubData";
+import { Project, ProjectEntry, Comment } from "../../../types/section";
 import { notFound } from "next/navigation";
+import CommentSection from "../../../components/ui/CommentSection";
+import MarkdownRenderer from "../../../components/ui/MarkdownRenderer";
+import { useState, useEffect } from "react";
 
 interface ProjectDetailPageProps {
   params: {
@@ -15,11 +18,54 @@ interface ProjectDetailPageProps {
 
 export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const router = useRouter();
-  const project = mockProjects.find(p => p.id === params.id);
+  const { projects, loading: projectsLoading } = useGitHubProjects();
+  const [project, setProject] = useState<Project | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  useEffect(() => {
+    console.log('Projects loaded:', projects);
+    console.log('Looking for project with ID:', params.id);
+    if (projects.length > 0) {
+      const foundProject = projects.find(p => p.id === params.id);
+      console.log('Found project:', foundProject);
+      if (foundProject) {
+        setProject(foundProject);
+        // Use comments from project data
+        setComments(foundProject.comments || []);
+        console.log('Project comments:', foundProject.comments);
+      }
+    }
+  }, [projects, params.id]);
+
+  if (projectsLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Ładowanie projektu...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!project) {
-    notFound();
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Projekt nie znaleziony</h1>
+          <p className="text-gray-400 mb-4">Szukany projekt: {params.id}</p>
+          <p className="text-gray-400 mb-4">Dostępne projekty: {projects.map(p => p.id).join(', ')}</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Wróć do strony głównej
+          </button>
+        </div>
+      </div>
+    );
   }
+
 
   const getStatusColor = (status: Project['status']) => {
     switch (status) {
@@ -53,6 +99,26 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleAddComment = async (content: string, parentId?: string) => {
+    try {
+      await addComment(content);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleLikeComment = (commentId: string) => {
+    likeComment(commentId);
+  };
+
+  const handleReplyToComment = async (commentId: string, content: string) => {
+    try {
+      await addComment(content);
+    } catch (error) {
+      console.error('Error adding reply:', error);
+    }
   };
 
   return (
@@ -138,9 +204,9 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 </div>
 
                 {/* Project Description */}
-                <p className="text-gray-200 text-xl leading-relaxed mb-8">
-                  {project.description}
-                </p>
+                <div className="text-gray-200 text-xl leading-relaxed mb-8">
+                  <MarkdownRenderer content={project.description} />
+                </div>
 
                 {/* Technologies */}
                 <div className="flex flex-wrap gap-3">
@@ -215,6 +281,18 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Sekcja komentarzy */}
+        <div className="mt-16">
+          <div className="max-w-4xl mx-auto">
+            <CommentSection
+              comments={comments}
+              onAddComment={handleAddComment}
+              onLikeComment={handleLikeComment}
+              onReplyToComment={handleReplyToComment}
+            />
           </div>
         </div>
       </div>
