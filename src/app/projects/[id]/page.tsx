@@ -8,12 +8,12 @@ import { Project, ProjectEntry, Comment } from "../../../types/section";
 import { notFound } from "next/navigation";
 import CommentSection from "../../../components/ui/CommentSection";
 import MarkdownRenderer from "../../../components/ui/MarkdownRenderer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 
 interface ProjectDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -21,12 +21,15 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { projects, loading: projectsLoading } = useGitHubProjects();
   const [project, setProject] = useState<Project | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  
+  // Unwrap params Promise
+  const { id } = use(params);
 
   useEffect(() => {
     console.log('Projects loaded:', projects);
-    console.log('Looking for project with ID:', params.id);
+    console.log('Looking for project with ID:', id);
     if (projects.length > 0) {
-      const foundProject = projects.find(p => p.id === params.id);
+      const foundProject = projects.find(p => p.id === id);
       console.log('Found project:', foundProject);
       if (foundProject) {
         setProject(foundProject);
@@ -35,7 +38,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         console.log('Project comments:', foundProject.comments);
       }
     }
-  }, [projects, params.id]);
+  }, [projects, id]);
 
   if (projectsLoading) {
     return (
@@ -53,7 +56,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Projekt nie znaleziony</h1>
-          <p className="text-gray-400 mb-4">Szukany projekt: {params.id}</p>
+          <p className="text-gray-400 mb-4">Szukany projekt: {id}</p>
           <p className="text-gray-400 mb-4">Dostępne projekty: {projects.map(p => p.id).join(', ')}</p>
           <button 
             onClick={() => router.push('/')}
@@ -103,19 +106,22 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
   const handleAddComment = async (content: string, parentId?: string) => {
     try {
-      await addComment(content);
+      // TODO: Implement comment adding to GitHub
+      console.log('Adding comment:', content, parentId);
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   };
 
   const handleLikeComment = (commentId: string) => {
-    likeComment(commentId);
+    // TODO: Implement comment liking
+    console.log('Liking comment:', commentId);
   };
 
   const handleReplyToComment = async (commentId: string, content: string) => {
     try {
-      await addComment(content);
+      // TODO: Implement comment replying to GitHub
+      console.log('Replying to comment:', commentId, content);
     } catch (error) {
       console.error('Error adding reply:', error);
     }
@@ -256,7 +262,12 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                           v{String(index + 1).padStart(2, '0')}.0.0
                         </span>
                       </div>
-                      <p className="text-sm text-gray-300 mb-2">
+                      <p className="text-sm text-gray-300 mb-2 max-h-[100px] overflow-hidden" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 4,
+                        WebkitBoxOrient: 'vertical',
+                        textOverflow: 'ellipsis'
+                      }}>
                         {entry.content}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-gray-400">

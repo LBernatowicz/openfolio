@@ -3,33 +3,49 @@
 import { ExternalLink, Briefcase, Tag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import SectionWrapper from "../ui/SectionWrapper";
-import { mockProjects } from "../../data/projects";
+import { useGitHubProjects } from "../../hooks/useGitHubData";
 
 export default function PortfolioSection() {
   const router = useRouter();
+  const { projects, loading, error } = useGitHubProjects();
 
-  const handleClick = () => {
-    router.push('/projects');
+  const handleProjectClick = (projectId: string) => {
+    router.push(`/projects/${projectId}`);
   };
 
-  const featuredProjects = mockProjects.slice(0, 2);
+  const featuredProjects = projects.slice(0, 2);
 
   return (
     <SectionWrapper width={2} height={1} hasExternalLink={true}>
       <div 
         className="flex items-center gap-2 mb-6 cursor-pointer"
-        onClick={handleClick}
+        onClick={() => router.push('/projects')}
       >
         <Briefcase className="w-6 h-6 text-blue-500 flex-shrink-0" />
         <h2 className="text-xl font-bold text-white whitespace-nowrap">Portfolio & Projekty</h2>
         <ExternalLink className="w-5 h-5 flex-shrink-0" />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {featuredProjects.map((project) => (
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+          <p className="text-xs text-gray-400">Ładowanie projektów...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="text-center py-8">
+          <p className="text-xs text-red-400 mb-2">Błąd ładowania</p>
+          <p className="text-xs text-gray-400">Sprawdź połączenie</p>
+        </div>
+      )}
+      
+      {!loading && !error && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {featuredProjects.map((project) => (
           <div
             key={project.id}
-            onClick={handleClick}
+            onClick={() => handleProjectClick(project.id)}
             className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 hover:border-slate-600/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
           >
             <div className="flex items-start justify-between gap-3 mb-3">
@@ -68,7 +84,8 @@ export default function PortfolioSection() {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
       
       <div className="text-center pt-3">
         <span className="text-xs text-gray-400 font-medium">

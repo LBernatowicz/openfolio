@@ -21,6 +21,8 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   const router = useRouter();
   const [showToc, setShowToc] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
+  const firstParagraphRef = useRef<HTMLParagraphElement>(null);
+  const [tocItems, setTocItems] = useState<Array<{id: string, text: string, level: number}>>([]);
   
   // Unwrap params Promise
   const { id, articleId } = use(params);
@@ -28,6 +30,69 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   // Use GitHub API
   const { projects, loading, error } = useGitHubProjects();
   const [comments, setComments] = useState<Comment[]>([]);
+
+  // Find project and article
+  const project = projects.find(p => p.id === id);
+  const article = project?.entries?.find(e => e.id === articleId);
+
+  // Generate table of contents from markdown content
+  const generateToc = (content: string) => {
+    const headings = content.match(/^#{1,6}\s+(.+)$/gm);
+    if (!headings) return [];
+    
+    return headings.map((heading, index) => {
+      const level = heading.match(/^#+/)?.[0].length || 1;
+      const text = heading.replace(/^#+\s+/, '');
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .trim();
+      
+      return { id, text, level };
+    });
+  };
+
+  // Initialize comments from article
+  useEffect(() => {
+    if (article?.comments) {
+      setComments(article.comments);
+    }
+  }, [article]);
+
+  // Generate table of contents when article content changes
+  useEffect(() => {
+    if (article?.content) {
+      const toc = generateToc(article.content);
+      console.log('Generated TOC items:', toc);
+      console.log('Article content preview:', article.content.substring(0, 200));
+      setTocItems(toc);
+    }
+  }, [article?.content]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        console.log('First paragraph intersection:', entry.isIntersecting);
+        console.log('Setting showToc to:', entry.isIntersecting);
+        setShowToc(entry.isIntersecting);
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '-100px 0px 0px 0px'
+      }
+    );
+
+    if (firstParagraphRef.current) {
+      observer.observe(firstParagraphRef.current);
+    }
+
+    return () => {
+      if (firstParagraphRef.current) {
+        observer.unobserve(firstParagraphRef.current);
+      }
+    };
+  }, [article?.content]);
   
   if (loading) {
     return (
@@ -56,51 +121,17 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     );
   }
   
-  // Find project and article
-  const project = projects.find(p => p.id === id);
-  
   if (!project) {
     console.log('❌ Project not found:', id);
     console.log('📋 Available projects:', projects.map(p => p.id));
     notFound();
   }
 
-  const article = project.entries?.find(e => e.id === articleId);
-  
   if (!article) {
     console.log('❌ Article not found:', articleId);
     console.log('📝 Available articles:', project.entries?.map(e => e.id));
     notFound();
   }
-
-  // Initialize comments from article
-  useEffect(() => {
-    if (article?.comments) {
-      setComments(article.comments);
-    }
-  }, [article]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowToc(entry.isIntersecting);
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '-100px 0px 0px 0px'
-      }
-    );
-
-    if (articleRef.current) {
-      observer.observe(articleRef.current);
-    }
-
-    return () => {
-      if (articleRef.current) {
-        observer.unobserve(articleRef.current);
-      }
-    };
-  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pl-PL', {
@@ -169,76 +200,87 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         {/* Article Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-slate-400 text-sm font-mono">CHANGELOG.md</span>
+        <div className="mb-12 relative overflow-hidden rounded-2xl">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url(${article.image || '/next.svg'})`,
+                filter: 'blur(2px) brightness(0.3)'
+              }}
+            ></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-purple-900/30 to-slate-900/60"></div>
           </div>
           
-          <h1 className="text-4xl font-bold text-white mb-4">{article.title}</h1>
-          
-          <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>{formatDate(article.date)}</span>
+          {/* Content */}
+          <div className="relative z-10 p-8 sm:p-12 lg:p-16">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-slate-300 text-sm font-mono">CHANGELOG.md</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Artykuł #{getArticleIndex()}</span>
+            
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
+              {article.title}
+            </h1>
+            
+            <div className="flex items-center gap-4 text-sm text-gray-300 mb-6">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>{formatDate(article.date)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>Artykuł #{getArticleIndex()}</span>
+              </div>
             </div>
-          </div>
-
-          <div className="text-xl text-gray-300 leading-relaxed">
-            <MarkdownRenderer content={article.content} />
           </div>
         </div>
 
-        {/* Article Image */}
-        {article.image && (
-          <div className="mb-12">
-            <div className="relative w-full h-64 lg:h-80 rounded-2xl overflow-hidden bg-slate-800">
-              <Image
-                src={article.image}
-                alt={article.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Article Content with Sidebar */}
         <div className="relative">
           {/* Table of Contents - Fixed Position with Scroll Detection */}
-          <div className={`hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-300 ${
-            showToc ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-          }`}>
-            <div className="bg-slate-900/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 w-64">
-              <h3 className="text-lg font-semibold text-white mb-4">Spis treści</h3>
-              <nav className="space-y-2">
-                <a href="#szczegoly" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Szczegóły implementacji
-                </a>
-                <a href="#zrobione" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Co zostało zrobione
-                </a>
-                <a href="#technologie" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Technologie użyte
-                </a>
-                <a href="#nastepne" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Następne kroki
-                </a>
-                <a href="#info" className="block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1">
-                  Informacje
-                </a>
-              </nav>
+          {console.log('TOC render - showToc:', showToc, 'tocItems.length:', tocItems.length, 'firstParagraphRef:', firstParagraphRef.current)}
+          {tocItems.length > 0 && (
+            <div className={`hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-300 opacity-100 translate-x-0`}>
+              <div className="bg-slate-900/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 w-64">
+                <h3 className="text-lg font-semibold text-white mb-4">Spis treści</h3>
+                <nav className="space-y-1">
+                  {tocItems.map((item, index) => (
+                    <a 
+                      key={index}
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const element = document.getElementById(item.id);
+                        if (element) {
+                          const offset = -300; // 20px from top
+                          const elementPosition = element.offsetTop - offset;
+                          window.scrollTo({
+                            top: elementPosition,
+                            behavior: 'smooth'
+                          });
+                        }
+                      }}
+                      className={`block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1 ${
+                        item.level === 1 ? 'font-medium' : 
+                        item.level === 2 ? 'ml-2' : 
+                        item.level === 3 ? 'ml-4' : 'ml-6'
+                      }`}
+                    >
+                      {item.text}
+                    </a>
+                  ))}
+                </nav>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Article Content - Full Container Width */}
           <article ref={articleRef} className="prose prose-invert max-w-none">
             <div className="bg-slate-900/30 backdrop-blur-sm rounded-3xl p-8 border border-slate-800/50">
-              <MarkdownRenderer content={article.content} />
+              <MarkdownRenderer content={article.content} firstParagraphRef={firstParagraphRef} />
               
               {/* Additional project info */}
               <div className="mt-8 pt-6 border-t border-slate-700">

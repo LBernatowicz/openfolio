@@ -209,7 +209,7 @@ export async function createIssueComment(issueNumber: number, body: string): Pro
 
 // Parse frontmatter from issue body
 function parseFrontmatter(body: string): any {
-  if (!body) return {};
+  if (!body) return { frontmatter: {}, content: '' };
   
   console.log('Parsing frontmatter from body:', body.substring(0, 200) + '...');
   
@@ -217,7 +217,7 @@ function parseFrontmatter(body: string): any {
   const match = body.match(frontmatterRegex);
   
   if (!match) {
-    console.log('No frontmatter found in body');
+    console.log('No frontmatter found in body, using entire body as content');
     return { frontmatter: {}, content: body };
   }
   
@@ -225,6 +225,7 @@ function parseFrontmatter(body: string): any {
   const content = match[2];
   
   console.log('Frontmatter text:', frontmatterText);
+  console.log('Content after frontmatter:', content.substring(0, 100) + '...');
   
   const frontmatter: any = {};
   const lines = frontmatterText.split('\n');
@@ -256,6 +257,7 @@ function parseFrontmatter(body: string): any {
   }
   
   console.log('Final frontmatter:', frontmatter);
+  console.log('Final content length:', content.length);
   return { frontmatter, content };
 }
 
