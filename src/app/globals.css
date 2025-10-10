@@ -50,6 +50,15 @@ body {
   }
 }
 
+@keyframes scroll-tags {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -61,6 +70,15 @@ body {
 .animate-glow {
   animation: glow 3s ease-in-out infinite;
 }
+
+.animate-scroll-tags {
+  animation: scroll-tags 30s linear infinite;
+}
+
+.animate-scroll-tags:hover {
+  animation-play-state: paused;
+}
+
 
 .animation-delay-2000 {
   animation-delay: 2s;

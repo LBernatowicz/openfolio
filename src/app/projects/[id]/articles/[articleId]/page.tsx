@@ -23,6 +23,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   const articleRef = useRef<HTMLElement>(null);
   const firstParagraphRef = useRef<HTMLParagraphElement>(null);
   const [tocItems, setTocItems] = useState<Array<{id: string, text: string, level: number}>>([]);
+  const [activeSection, setActiveSection] = useState<string>('');
   
   // Unwrap params Promise
   const { id, articleId } = use(params);
@@ -93,6 +94,44 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       }
     };
   }, [article?.content]);
+
+  // Track active section for TOC highlighting
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+
+    const updateActiveSection = () => {
+      const headingElements = tocItems
+        .map(item => document.getElementById(item.id))
+        .filter((el): el is HTMLElement => el !== null);
+
+      if (headingElements.length === 0) return;
+
+      // Find headings that are above or near the top of the viewport
+      const headingsAboveViewport = headingElements.filter(heading => {
+        const rect = heading.getBoundingClientRect();
+        return rect.top <= 200; // Within 200px from top
+      });
+
+      if (headingsAboveViewport.length > 0) {
+        // Get the last heading that's above the viewport (most recent one we scrolled past)
+        const activeHeading = headingsAboveViewport[headingsAboveViewport.length - 1];
+        setActiveSection(activeHeading.id);
+      } else if (headingElements.length > 0) {
+        // If no headings are above viewport, activate the first one
+        setActiveSection(headingElements[0].id);
+      }
+    };
+
+    // Initial check
+    updateActiveSection();
+
+    // Update on scroll
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+    };
+  }, [tocItems]);
   
   if (loading) {
     return (
@@ -241,37 +280,43 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         {/* Article Content with Sidebar */}
         <div className="relative">
           {/* Table of Contents - Fixed Position with Scroll Detection */}
-          {console.log('TOC render - showToc:', showToc, 'tocItems.length:', tocItems.length, 'firstParagraphRef:', firstParagraphRef.current)}
           {tocItems.length > 0 && (
             <div className={`hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-300 opacity-100 translate-x-0`}>
               <div className="bg-slate-900/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 w-64">
                 <h3 className="text-lg font-semibold text-white mb-4">Spis treści</h3>
                 <nav className="space-y-1">
-                  {tocItems.map((item, index) => (
-                    <a 
-                      key={index}
-                      href={`#${item.id}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        const element = document.getElementById(item.id);
-                        if (element) {
-                          const offset = -300; // 20px from top
-                          const elementPosition = element.offsetTop - offset;
-                          window.scrollTo({
-                            top: elementPosition,
-                            behavior: 'smooth'
-                          });
-                        }
-                      }}
-                      className={`block text-sm text-gray-300 hover:text-blue-400 transition-colors duration-200 py-1 ${
-                        item.level === 1 ? 'font-medium' : 
-                        item.level === 2 ? 'ml-2' : 
-                        item.level === 3 ? 'ml-4' : 'ml-6'
-                      }`}
-                    >
-                      {item.text}
-                    </a>
-                  ))}
+                  {tocItems.map((item, index) => {
+                    const isActive = activeSection === item.id;
+                    return (
+                      <a 
+                        key={index}
+                        href={`#${item.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const element = document.getElementById(item.id);
+                          if (element) {
+                            const offset = -300; // 20px from top
+                            const elementPosition = element.offsetTop - offset;
+                            window.scrollTo({
+                              top: elementPosition,
+                              behavior: 'smooth'
+                            });
+                          }
+                        }}
+                        className={`block text-sm transition-all duration-200 py-1 border-l-2 pl-3 ${
+                          isActive 
+                            ? 'text-blue-400 border-blue-400 font-semibold bg-blue-500/10' 
+                            : 'text-gray-300 border-transparent hover:text-blue-400 hover:border-blue-400/50'
+                        } ${
+                          item.level === 1 ? 'font-medium' : 
+                          item.level === 2 ? 'ml-2' : 
+                          item.level === 3 ? 'ml-4' : 'ml-6'
+                        }`}
+                      >
+                        {item.text}
+                      </a>
+                    );
+                  })}
                 </nav>
               </div>
             </div>
