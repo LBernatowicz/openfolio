@@ -3,20 +3,22 @@
 import { User } from "lucide-react";
 import SectionWrapper from "../ui/SectionWrapper";
 import { useState } from "react";
+import { useTranslations } from 'next-intl';
 
 export default function AboutSection() {
+  const t = useTranslations('about');
   const [activeCategory, setActiveCategory] = useState<'developer' | 'engineer'>('developer');
 
   const categories = {
     developer: {
-      title: "Główne narzędzia dla programisty",
-      tools: ['JavaScript', 'React', 'Astro', 'Python', 'PHP', 'MongoDB', 'SQL', 'Node.js', 'TypeScript', 'Next.js', 'Tailwind'],
-      description: "Poza programowaniem, pasjonuję się muzyką, podróżowaniem i fotografią. Niezwykłym hobby jest dla mnie gra na gitarze i tworzenie muzyki elektronicznej."
+      title: t('developerTools'),
+      tools: [ 'React', 'React Native', 'LLM', 'Docker', 'MongoDB', 'SQL', 'Node.js', 'TypeScript', 'Next.js', 'Tailwind', 'ROS2', 'YOLOv8'],
+      description: t('developerDescription')
     },
     engineer: {
-      title: "Główne narzędzia dla inżyniera",
-      tools: ['Docker', 'Kubernetes', 'CI/CD', 'Linux', 'Git', 'AWS', 'Terraform', 'Jenkins', 'Nginx', 'PostgreSQL', 'Redis'],
-      description: "Jako inżynier systemów, skupiam się na budowaniu skalowalnej infrastruktury i automatyzacji procesów. Pasjonuje mnie DevOps i architektura chmurowa."
+      title: t('engineerTools'),
+      tools: ['Inventor', 'SolidWorks', 'Nastram', 'CAM', 'CAD', 'PCB', 'MES', 'ROBOTICS', 'ROS2', 'YOLOv8'],
+      description: t('engineerDescription')
     }
   };
 
@@ -26,10 +28,10 @@ export default function AboutSection() {
     <SectionWrapper width={1} height={2}>
         <div className="flex items-center gap-2 mb-6">
           <User className="w-6 h-6 text-blue-500 flex-shrink-0" />
-          <h2 className="text-xl font-bold text-white whitespace-nowrap">About me</h2>
+          <h2 className="text-xl font-bold text-white whitespace-nowrap">{t('title')}</h2>
         </div>
         <p className="text-gray-300 mb-6">
-          Cześć, jestem Łukasz, fullstack developer z Polski 🇵🇱
+          {t('greeting')}
         </p>
         
         <div className="mb-6">
@@ -44,7 +46,7 @@ export default function AboutSection() {
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              Programista
+              {t('developer')}
             </button>
             <button
               onClick={() => setActiveCategory('engineer')}
@@ -55,7 +57,7 @@ export default function AboutSection() {
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
-              Inżynier
+              {t('engineer')}
             </button>
           </div>
 
@@ -63,42 +65,16 @@ export default function AboutSection() {
             {currentCategory.title}
           </h3>
           
-          {/* Scrolling Tags Container */}
-          <div className="relative overflow-hidden h-16 rounded-lg bg-gray-900/50 border border-gray-800">
-            <div className="absolute inset-0 flex items-center">
-              <div className="flex gap-2 animate-scroll-tags">
-                {/* First set of tags */}
-                {currentCategory.tools.map((tech) => (
-                  <span 
-                    key={`${activeCategory}-${tech}-1`}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all duration-300 ${
-                      activeCategory === 'developer'
-                        ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 hover:bg-blue-600/30 hover:border-blue-400'
-                        : 'bg-purple-600/20 text-purple-300 border border-purple-500/40 hover:bg-purple-600/30 hover:border-purple-400'
-                    }`}
-                  >
-                    {tech}
-                  </span>
-                ))}
-                {/* Duplicate set for seamless loop */}
-                {currentCategory.tools.map((tech) => (
-                  <span 
-                    key={`${activeCategory}-${tech}-2`}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap flex-shrink-0 transition-all duration-300 ${
-                      activeCategory === 'developer'
-                        ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 hover:bg-blue-600/30 hover:border-blue-400'
-                        : 'bg-purple-600/20 text-purple-300 border border-purple-500/40 hover:bg-purple-600/30 hover:border-purple-400'
-                    }`}
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            {/* Simple gradient overlays */}
-            <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-gray-900/50 to-transparent pointer-events-none z-10"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-900/50 to-transparent pointer-events-none z-10"></div>
+          {/* Static Tags Container */}
+          <div className="flex flex-wrap gap-2">
+            {currentCategory.tools.map((tech) => (
+              <span 
+                key={`${activeCategory}-${tech}`}
+                className="px-3 py-1.5 rounded-md text-xs font-medium bg-gray-800/60 text-gray-400 border border-gray-700/50 hover:bg-gray-700/60 hover:text-gray-300 hover:border-gray-600/50 transition-all duration-200"
+              >
+                {tech}
+              </span>
+            ))}
           </div>
         </div>
         

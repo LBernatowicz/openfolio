@@ -1,0 +1,319 @@
+{
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "tryAgain": "Spróbuj ponownie",
+    "cancel": "Anuluj",
+    "send": "Wyślij",
+    "save": "Zapisz",
+    "back": "Wróć",
+    "viewMore": "Zobacz więcej",
+    "clickToView": "Kliknij, aby zobaczyć",
+    "articles": "artykułów",
+    "article": "Artykuł"
+  },
+  "nav": {
+    "backToHome": "Powrót do strony głównej",
+    "backToProjects": "Powrót do projektów",
+    "backToProject": "Powrót do projektu",
+    "palette": "Paleta",
+    "theme": {
+      "dark": "Ciemny",
+      "light": "Jasny",
+      "system": "System"
+    },
+    "language": {
+      "polish": "Polski",
+      "english": "English"
+    }
+  },
+  "home": {
+    "welcome": "witam",
+    "intro": "Jestem Łukasz, programista z doświadczeniem w tworzeniu aplikacji webowych, systemów sterowania i projektów z pogranicza AI i robotyki. Lubię łączyć kod z inżynierskim podejściem do problemów."
+  },
+  "about": {
+    "title": "O mnie",
+    "greeting": "Buduję technologie, które działają — prosto, skutecznie i z sensem. 🇵🇱",
+    "developer": "Programista",
+    "engineer": "Inżynier",
+    "developerTools": "Główne narzędzia dla programisty",
+    "engineerTools": "Główne narzędzia dla inżyniera",
+    "engineerDescription": "Łączę wiedzę techniczną z praktyką warsztatową, tworząc funkcjonalne i dopracowane rozwiązania. Programy CAD, CAM oprogramowanie do projektowania PCB nie jest mi obce.",
+    "developerDescription": "W pracy programisty stawiam na praktyczne podejście i precyzję — tworzę oprogramowanie, które wspiera realne procesy techniczne i inżynierskie."
+  },
+  "portfolio": {
+    "title": "Projekty",
+    "loadingProjects": "Ładowanie projektów...",
+    "loadingError": "Błąd ładowania",
+    "checkConnection": "Sprawdź połączenie",
+    "clickToViewAll": "Kliknij, aby zobaczyć wszystkie projekty →"
+  },
+  "now": {
+    "title": "Now",
+    "whatIsThis": "Lineages",
+    "currentStatus": "Obecnie pracuję nad tym projektem"
+  },
+  "cv": {
+    "title": "CV",
+    "description": "Kliknij przycisk poniżej, aby poprosić o moje CV",
+    "askButton": "Poproś o CV",
+    "requestSent": "Zapytanie wysłane!",
+    "requestMessage": "Dziękuję za zainteresowanie! Skontaktuję się z Tobą wkrótce.",
+    "modal": {
+      "title": "Poproś o CV",
+      "nameLabel": "Imię",
+      "emailLabel": "Email",
+      "namePlaceholder": "Wprowadź swoje imię",
+      "emailPlaceholder": "Wprowadź swój email",
+      "sendButton": "Wyślij prośbę",
+      "cancelButton": "Anuluj",
+      "nameRequired": "Imię jest wymagane",
+      "emailRequired": "Email jest wymagany",
+      "emailInvalid": "Nieprawidłowy format email"
+    }
+  },
+  "education": {
+    "title": "Edukacja",
+    "degree": "Inżynieria mechaniczno-medyczna",
+    "university": "Politechnika Gdańska",
+    "period": "2015 - 2020",
+    "specialization": "Specjalizacja: Inżynieria mechaniczno-medyczna",
+    "courses": "Kursy i certyfikaty",
+    "platforms": "Różne platformy",
+    "current": "Obecnie",
+    "technologies": "React, Node.js, ROS2, LLM, Docker, YOLOv8, Inventor, SolidWorks, Nastram, AI_DEVS, CAD",
+    "clickToViewDetails": "Kliknij, aby zobaczyć szczegóły →",
+    "certificates": {
+      "title": "Certyfikaty",
+      "subtitle": "Moje osiągnięcia i certyfikaty",
+      "items": {
+        "aws": {
+          "title": "AWS Certified Solutions Architect",
+          "issuer": "Amazon Web Services",
+          "date": "2023",
+          "description": "Certyfikat potwierdzający umiejętności projektowania skalowalnych aplikacji w chmurze AWS"
+        },
+        "react": {
+          "title": "React Developer Certification",
+          "issuer": "Meta",
+          "date": "2023",
+          "description": "Certyfikat potwierdzający zaawansowane umiejętności w React i ekosystemie JavaScript"
+        },
+        "docker": {
+          "title": "Docker Certified Associate",
+          "issuer": "Docker Inc.",
+          "date": "2022",
+          "description": "Certyfikat potwierdzający umiejętności konteneryzacji i zarządzania aplikacjami Docker"
+        },
+        "typescript": {
+          "title": "TypeScript Fundamentals",
+          "issuer": "Microsoft",
+          "date": "2022",
+          "description": "Certyfikat potwierdzający znajomość TypeScript i zaawansowanych wzorców programowania"
+        }
+      }
+    }
+  },
+  "experience": {
+    "title": "Doświadczenie",
+    "myExperience": "Moje Doświadczenie",
+    "careerHistory": "Historia mojej kariery zawodowej",
+    "softwareEngineer": "Software Engineer",
+    "frontendDeveloper": "Frontend developer",
+    "current": "Obecnie",
+    "clickToViewDetails": "Kliknij, aby zobaczyć szczegóły →",
+    "technologies": "Technologie",
+    "achievements": "Kluczowe osiągnięcia",
+    "interestedInCollaboration": "Interesuje Cię współpraca?",
+    "openToOpportunities": "Jestem otwarty na nowe możliwości i projekty. Skontaktuj się ze mną!",
+    "getInTouch": "Skontaktuj się",
+    "types": {
+      "fullTime": "Pełny etat",
+      "partTime": "Część etatu",
+      "contract": "Kontrakt",
+      "freelance": "Freelance",
+      "other": "Inne"
+    },
+    "jobs": {
+      "position1": {
+        "title": "Inżynier pojazdów ROV",
+        "company": "PBH Forkos",
+        "location": "Gdynia, Polska",
+        "period": "2013 - 2015",
+        "description": "Budowa urządzeń i czujników do pracy pod wodą, modernizacja pojazdów ROV",
+        "achievement1": "Opracowywanie szczelnych pojemników podwodnych do glebokości 200 metrów",
+        "achievement2": "Wykonywaie detali na maszynach CNC",
+        "achievement3": "Programowanie arduino, raspberry pi",
+        "achievement4": "Projektowanie układów elektronicznych",
+        "achievement5": "Testowanie urządzeń w warunkach podwodnych",
+        "technologies": "Arduino, Raspberry Pi, CNC, SolidWorks, AutoCAD, Elektronika"
+      },
+      "position2": {
+        "title": "Inynier stoczniowy",
+        "company": "Stocznia remontowa Nauta",
+        "location": "Gdynia, Polska",
+        "period": "2015 - 2016",
+        "description": "Opracowywanie elementów naprawczych, uchwytów transportowych oraz modernizacja pokladów na statkach komercyjnych oraz okrętach wojskowych",
+        "achievement1": "Wspópraca w duzym, wielodepartamentowym zespole",
+        "achievement2": "Obliczenia newralgicznych elementów konstrukcyjnych",
+        "achievement3": "Kordynacja zamowien i procesów budowy",
+        "achievement4": "Projektowanie elementów naprawczych",
+        "achievement5": "Modernizacja pokładów statków",
+        "technologies": "SolidWorks, AutoCAD, Inventor, Nastran, FEA, Projektowanie mechaniczne"
+      },
+      "position3": {
+        "title": "Inżynier projektowy",
+        "company": "Ocean-Tech",
+        "location": "Chwaszczyno, Polska",
+        "period": "2016 - 2021 | 2023 - obecnie (Praca w formie dorywczej)",
+        "description": "Praca nad projektami badawczymi w zakresie robotyki podwodnej. Modernizacja komór hiperbarczynych. Tworzenie pneumatycznych tablic niskiego i wysokiego ciśnienia",
+        "achievement1": "Prace nad pojazdem podwodnym do zbierania próbek fizykochemicznych pomagająym lokalizować zwloki `UTOPIEC`",
+        "achievement2": "Budowa systemu wizji nurkowego dla dwóch nurków",
+        "achievement3": "Praca nad projektem badawczym podwodnego manipulatora 5-osiowego",
+        "achievement4": "Modernizacja wojskowych pojazdów ROV typu FALCON",
+        "achievement5": "Budowa ciśnieniowej komory badającej szczelność urządzeń elektrycznych",
+        "technologies": "ROS2, Python, C++, OpenCV, SolidWorks, Inventor, Elektronika, Robotyka"
+      },
+      "position4": {
+        "title": "Programista Frontend",
+        "company": "Madmontain",
+        "location": "Remote",
+        "period": "2020 - 2021",
+        "description": "Praca nad utrzymaniem i rozwojem aplikacji mobilnej w React Native.",
+        "achievement1": "Naprawa blędów w aplikacji",
+        "achievement2": "Budowa modułu reklam w aplikacji",
+        "achievement3": "Refaktoryzacja kodu aplikacji",
+        "achievement4": "Implementacja nowych funkcjonalności",
+        "achievement5": "Optymalizacja wydajności aplikacji",
+        "technologies": "React Native, JavaScript, Redux, Firebase, Git"
+      },
+      "position5": {
+        "title": "Programista Frontend",
+        "company": "Lightsoft",
+        "location": "Remote",
+        "period": "2019 - obecnie",
+        "description": "Praca nad utrzymaniem i rozwojem aplikacji mobilnej w React Native.",
+        "achievement1": "Naprawa blędów w aplikacji",
+        "achievement2": "Budowa modułu reklam w aplikacji",
+        "achievement3": "Refaktoryzacja kodu aplikacji",
+        "achievement4": "Implementacja testów jednostkowych",
+        "achievement5": "Integracja z zewnętrznymi API",
+        "technologies": "React Native, JavaScript, Redux, Firebase, Git, Jest"
+      },
+      "position6": {
+        "title": "Programista Frontend",
+        "company": "Codema",
+        "location": "Remote",
+        "period": "2021 - 2022",
+        "description": "Praca nad utrzymaniem i rozwojem aplikacji mobilnej w React Native.",
+        "achievement1": "Naprawa blędów w aplikacji",
+        "achievement2": "Budowa modułu reklam w aplikacji",
+        "achievement3": "Refaktoryzacja kodu aplikacji",
+        "achievement4": "Migracja z JavaScript na TypeScript",
+        "achievement5": "Implementacja nowoczesnych wzorców programowania",
+        "technologies": "React Native, TypeScript, Redux, Firebase, Git, Jest, ESLint"
+      },
+      "position7": {
+        "title": "Programista Frontend",
+        "company": "Napoleon Cat",
+        "location": "Remote",
+        "period": "2022 - current",
+        "description": "Praca nad utrzymaniem i rozwojem aplikacji mobilnej w React Native.",
+        "achievement1": "Naprawa blędów w aplikacji",
+        "achievement2": "Budowa modułu reklam w aplikacji",
+        "achievement3": "Refaktoryzacja kodu aplikacji",
+        "achievement4": "Implementacja Redux Toolkit",
+        "achievement5": "Konfiguracja narzędzi deweloperskich (ESLint, Prettier)",
+        "technologies": "React Native, TypeScript, Redux Toolkit, Firebase, Git, Jest, ESLint, Prettier"
+      }
+    }
+  },
+  "contact": {
+    "title": "Zacznijmy współpracę!",
+    "location": "Warszawa, Polska 🇵🇱"
+  },
+  "quotes": {
+    "quote1": {
+      "text": "Wszystko, co człowiek może sobie wyobrazić, inni ludzie mogą uczynić rzeczywistością!.",
+      "author": "Jules Verne"
+    },
+    "quote2": {
+      "text": "Programowanie to sztuka rozwiązywania problemów za pomocą kodu.",
+      "author": "Anonimowy programista"
+    },
+    "quote3": {
+      "text": "Najlepszy sposób na naukę programowania to programowanie.",
+      "author": "Kent Beck"
+    },
+    "quote4": {        "achievement2": "Wprowadzenie nowego systemu testów automatycznych, redukując błędy produkcyjne o 60%",
+
+      "text": "Kod to poezja, która ma sens dla komputera.",
+      "author": "Paul Graham"
+    },
+    "goToQuote": "Przejdź do cytatu"
+  },
+  "timezone": {
+    "title": "Strefa czasowa",
+    "currentTime": "Czwartek, 10 października 2024 o 8:16:30",
+    "location": "Warszawa, Polska 🇵🇱"
+  },
+  "projects": {
+    "title": "Projekty",
+    "myProjects": "Moje Projekty",
+    "subtitle": "Kolekcja moich najważniejszych projektów ",
+    "loading": "Ładowanie projektów z GitHub...",
+    "loadingProject": "Ładowanie projektu...",
+    "loadingArticle": "Ładowanie artykułu...",
+    "loadingError": "Błąd ładowania projektów:",
+    "checkGitHub": "Sprawdź konfigurację GitHub API",
+    "notFound": "Projekt nie znaleziony",
+    "searchedProject": "Szukany projekt:",
+    "availableProjects": "Dostępne projekty:",
+    "errorLoadingArticle": "Błąd podczas ładowania artykułu",
+    "status": {
+      "completed": "Ukończony",
+      "inProgress": "W trakcie",
+      "planned": "Planowany",
+      "unknown": "Nieznany"
+    },
+    "buttons": {
+      "github": "GitHub",
+      "liveDemo": "Live Demo"
+    },
+    "changelog": {
+      "title": "Changelog",
+      "subtitle": "Historia zmian w projekcie",
+      "readArticle": "Przeczytaj artykuł"
+    },
+    "article": {
+      "changelogFile": "CHANGELOG.md",
+      "articleNumber": "Artykuł #",
+      "tableOfContents": "Spis treści",
+      "technologiesUsed": "Technologie użyte",
+      "publicationDate": "Data publikacji:",
+      "version": "Wersja:",
+      "backToProject": "Powrót do projektu"
+    }
+  },
+  "comments": {
+    "title": "Komentarze",
+    "addComment": "Dodaj komentarz...",
+    "writeReply": "Napisz odpowiedź...",
+    "send": "Wyślij",
+    "cancel": "Anuluj",
+    "reply": "Odpowiedz",
+    "noComments": "Brak komentarzy. Bądź pierwszy!",
+    "user": "Użytkownik"
+  },
+  "date": {
+    "format": {
+      "long": "pl-PL",
+      "options": {
+        "year": "numeric",
+        "month": "long",
+        "day": "numeric"
+      }
+    }
+  }
+}
+

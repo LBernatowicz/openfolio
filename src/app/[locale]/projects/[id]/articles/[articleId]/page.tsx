@@ -1,14 +1,15 @@
 "use client";
 
 import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { useEffect, useRef, useState, use } from "react";
-import { Comment } from "../../../../../types/section";
-import CommentSection from "../../../../../components/ui/CommentSection";
-import MarkdownRenderer from "../../../../../components/ui/MarkdownRenderer";
-import { useGitHubProjects } from "../../../../../hooks/useGitHubData";
+import { useTranslations, useLocale } from 'next-intl';
+import { Comment } from "@/types/section";
+import CommentSection from "@/components/ui/CommentSection";
+import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
+import { useGitHubProjects } from "@/hooks/useGitHubData";
 
 interface ArticlePageProps {
   params: Promise<{
@@ -18,6 +19,12 @@ interface ArticlePageProps {
 }
 
 export default function ArticlePage({ params }: ArticlePageProps) {
+  const t = useTranslations('projects');
+  const tNav = useTranslations('nav');
+  const tComments = useTranslations('comments');
+  const tCommon = useTranslations('common');
+  const tArticle = useTranslations('projects.article');
+  const locale = useLocale();
   const router = useRouter();
   const [showToc, setShowToc] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
@@ -138,7 +145,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Ładowanie artykułu...</p>
+          <p className="text-slate-400">{t('loadingArticle')}</p>
         </div>
       </div>
     );
@@ -148,12 +155,12 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-400 mb-4">Błąd podczas ładowania artykułu</p>
+          <p className="text-red-400 mb-4">{t('errorLoadingArticle')}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Spróbuj ponownie
+            {tCommon('tryAgain')}
           </button>
         </div>
       </div>
@@ -173,7 +180,8 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pl-PL', {
+    const localeCode = locale === 'pl' ? 'pl-PL' : 'en-US';
+    return new Date(dateString).toLocaleDateString(localeCode, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -187,7 +195,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   const handleAddComment = (content: string, parentId?: string) => {
     const newComment: Comment = {
       id: Date.now().toString(),
-      author: 'Użytkownik',
+      author: tComments('user'),
       content,
       date: new Date().toISOString(),
       parentId,
@@ -224,7 +232,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-200 group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-200" />
-              <span className="font-semibold text-lg">Powrót do projektu</span>
+              <span className="font-semibold text-lg">{tArticle('backToProject')}</span>
             </button>
             
             <div className="flex items-center gap-2">
@@ -256,7 +264,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
           <div className="relative z-10 p-8 sm:p-12 lg:p-16">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-slate-300 text-sm font-mono">CHANGELOG.md</span>
+              <span className="text-slate-300 text-sm font-mono">{tArticle('changelogFile')}</span>
             </div>
             
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
@@ -270,7 +278,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span>Artykuł #{getArticleIndex()}</span>
+                <span>{tArticle('articleNumber')}{getArticleIndex()}</span>
               </div>
             </div>
           </div>
@@ -283,7 +291,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
           {tocItems.length > 0 && (
             <div className={`hidden xl:block fixed left-8 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-300 opacity-100 translate-x-0`}>
               <div className="bg-slate-900/30 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 w-64">
-                <h3 className="text-lg font-semibold text-white mb-4">Spis treści</h3>
+                <h3 className="text-lg font-semibold text-white mb-4">{tArticle('tableOfContents')}</h3>
                 <nav className="space-y-1">
                   {tocItems.map((item, index) => {
                     const isActive = activeSection === item.id;

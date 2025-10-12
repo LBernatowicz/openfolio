@@ -2,8 +2,9 @@
 
 import { useState, useEffect, use } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import MarkdownRenderer from "../../../../../components/ui/MarkdownRenderer";
+import { useRouter } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
+import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 
 interface ArticlePageProps {
   params: Promise<{
@@ -13,6 +14,11 @@ interface ArticlePageProps {
 }
 
 export default function ArticlePage({ params }: ArticlePageProps) {
+  const t = useTranslations('projects');
+  const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
+  const tArticle = useTranslations('projects.article');
+  const locale = useLocale();
   const router = useRouter();
   const { id, articleId } = use(params);
   const [article, setArticle] = useState<any>(null);
@@ -58,7 +64,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Ładowanie artykułu...</p>
+          <p className="text-slate-400">{t('loadingArticle')}</p>
         </div>
       </div>
     );
@@ -68,15 +74,15 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">404 - Artykuł nie znaleziony</h1>
+          <h1 className="text-2xl font-bold mb-4">404 - {t('notFound')}</h1>
           <p className="text-slate-400 mb-4">
-            Projekt: {id} | Artykuł: {articleId}
+            {t('searchedProject')} {id} | {tCommon('article')}: {articleId}
           </p>
           <button 
             onClick={() => router.push('/projects')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Powrót do projektów
+            {tNav('backToProjects')}
           </button>
         </div>
       </div>
@@ -94,7 +100,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-200 group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-200" />
-              <span className="font-semibold text-lg">Powrót do projektu</span>
+              <span className="font-semibold text-lg">{tArticle('backToProject')}</span>
             </button>
             
             <div className="flex items-center gap-2">
@@ -111,8 +117,8 @@ export default function ArticlePage({ params }: ArticlePageProps) {
           <h1 className="text-4xl font-bold text-white mb-4">{article.title}</h1>
           
           <div className="flex items-center gap-4 text-sm text-gray-400 mb-6">
-            <span>{new Date(article.date).toLocaleDateString('pl-PL')}</span>
-            <span>Projekt: {project.title}</span>
+            <span>{new Date(article.date).toLocaleDateString(locale === 'pl' ? 'pl-PL' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>{t('searchedProject')} {project.title}</span>
           </div>
 
           <div className="bg-slate-900/30 backdrop-blur-sm rounded-3xl p-8 border border-slate-800/50">
@@ -127,7 +133,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
             className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Powrót do projektu</span>
+            <span>{tArticle('backToProject')}</span>
           </button>
         </div>
       </div>

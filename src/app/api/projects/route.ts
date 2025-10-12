@@ -12,7 +12,7 @@ export async function GET() {
     console.log('NEXT_PUBLIC_GITHUB_REPO:', process.env.NEXT_PUBLIC_GITHUB_REPO);
     
     // TEMPORARY: Force GitHub to be available for testing
-    const forceGitHub = true; // CHANGED: Force GitHub for testing
+    const forceGitHub = true; // CHANGED: Use real GitHub projects
     
     if (!forceGitHub) {
       // Check if GitHub is available (has token)

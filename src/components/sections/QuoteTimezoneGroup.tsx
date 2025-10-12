@@ -2,30 +2,36 @@
 
 import { useState, useEffect } from "react";
 import { Clock, MapPin } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import VerticalGroup from "../ui/VerticalGroup";
 
-const quotes = [
-  {
-    text: "Wszystko, co człowiek może sobie wyobrazić, inni ludzie mogą uczynić rzeczywistością.",
-    author: "Jules Verne"
-  },
-  {
-    text: "Programowanie to sztuka rozwiązywania problemów za pomocą kodu.",
-    author: "Anonimowy programista"
-  },
-  {
-    text: "Najlepszy sposób na naukę programowania to programowanie.",
-    author: "Kent Beck"
-  },
-  {
-    text: "Kod to poezja, która ma sens dla komputera.",
-    author: "Paul Graham"
-  }
-];
-
 export default function QuoteTimezoneGroup() {
+  const t = useTranslations('quotes');
+  const tTimezone = useTranslations('timezone');
+  const locale = useLocale();
+  
+  const quotes = [
+    {
+      text: t('quote1.text'),
+      author: t('quote1.author')
+    },
+    {
+      text: t('quote2.text'),
+      author: t('quote2.author')
+    },
+    {
+      text: t('quote3.text'),
+      author: t('quote3.author')
+    },
+    {
+      text: t('quote4.text'),
+      author: t('quote4.author')
+    }
+  ];
+  
   const [currentQuote, setCurrentQuote] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     // Opóźnienie bazowe + losowe dla płynności
@@ -48,8 +54,33 @@ export default function QuoteTimezoneGroup() {
     return () => clearInterval(interval);
   }, []);
 
+  // Aktualizacja czasu co sekundę
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timeInterval);
+  }, []);
+
   const goToQuote = (index: number) => {
     setCurrentQuote(index);
+  };
+
+  // Formatowanie czasu w zależności od locale
+  const formatCurrentTime = () => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Europe/Warsaw'
+    };
+    
+    return currentTime.toLocaleString(locale === 'pl' ? 'pl-PL' : 'en-US', options);
   };
 
   return (
@@ -79,7 +110,7 @@ export default function QuoteTimezoneGroup() {
                     ? 'bg-gray-400 w-3' 
                     : 'bg-gray-600 hover:bg-gray-500'
                 }`}
-                aria-label={`Przejdź do cytatu ${index + 1}`}
+                aria-label={`${t('goToQuote')} ${index + 1}`}
               />
             ))}
           </div>
@@ -97,15 +128,15 @@ export default function QuoteTimezoneGroup() {
         <div className="mb-2 relative z-10">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-6 h-6 text-blue-500 flex-shrink-0" />
-            <h2 className="text-xl font-bold text-white whitespace-nowrap">Strefa czasowa</h2>
+            <h2 className="text-xl font-bold text-white whitespace-nowrap">{tTimezone('title')}</h2>
           </div>
           <div className="flex items-center gap-2 mb-1">
             <Clock className="w-4 h-4" />
-            <span className="text-gray-300 text-sm">Czwartek, 18 września 2024 o 8:16:30</span>
+            <span className="text-gray-300 text-sm">{formatCurrentTime()}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            <span className="text-gray-300 text-sm">Warszawa, Polska 🇵🇱</span>
+            <span className="text-gray-300 text-sm">{tTimezone('location')}</span>
           </div>
         </div>
       </div>

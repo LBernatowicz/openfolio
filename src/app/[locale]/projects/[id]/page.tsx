@@ -1,14 +1,15 @@
 "use client";
 
 import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag, Clock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import Image from "next/image";
-import { useGitHubProjects, useProjectComments } from "../../../hooks/useGitHubData";
-import { Project, ProjectEntry, Comment } from "../../../types/section";
+import { useGitHubProjects, useProjectComments } from "@/hooks/useGitHubData";
+import { Project, ProjectEntry, Comment } from "@/types/section";
 import { notFound } from "next/navigation";
-import CommentSection from "../../../components/ui/CommentSection";
-import MarkdownRenderer from "../../../components/ui/MarkdownRenderer";
+import CommentSection from "@/components/ui/CommentSection";
+import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
 import { useState, useEffect, use } from "react";
+import { useTranslations } from 'next-intl';
 
 interface ProjectDetailPageProps {
   params: Promise<{
@@ -17,13 +18,24 @@ interface ProjectDetailPageProps {
 }
 
 export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  const t = useTranslations('projects');
+  const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { projects, loading: projectsLoading } = useGitHubProjects();
   const [project, setProject] = useState<Project | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
   
   // Unwrap params Promise
   const { id } = use(params);
+
+  // Use the comments hook for this specific project
+  const { 
+    comments, 
+    loading: commentsLoading, 
+    error: commentsError, 
+    addComment, 
+    likeComment 
+  } = useProjectComments(id);
 
   useEffect(() => {
     console.log('Projects loaded:', projects);
@@ -33,9 +45,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       console.log('Found project:', foundProject);
       if (foundProject) {
         setProject(foundProject);
-        // Use comments from project data
-        setComments(foundProject.comments || []);
-        console.log('Project comments:', foundProject.comments);
+        console.log('Project comments will be loaded by useProjectComments hook');
       }
     }
   }, [projects, id]);
@@ -45,7 +55,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Ładowanie projektu...</p>
+          <p className="text-gray-400">{t('loadingProject')}</p>
         </div>
       </div>
     );
@@ -55,14 +65,14 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Projekt nie znaleziony</h1>
-          <p className="text-gray-400 mb-4">Szukany projekt: {id}</p>
-          <p className="text-gray-400 mb-4">Dostępne projekty: {projects.map(p => p.id).join(', ')}</p>
+          <h1 className="text-2xl font-bold text-white mb-4">{t('notFound')}</h1>
+          <p className="text-gray-400 mb-4">{t('searchedProject')} {id}</p>
+          <p className="text-gray-400 mb-4">{t('availableProjects')} {projects.map(p => p.id).join(', ')}</p>
           <button 
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Wróć do strony głównej
+            {tNav('backToHome')}
           </button>
         </div>
       </div>
@@ -86,13 +96,13 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const getStatusText = (status: Project['status']) => {
     switch (status) {
       case 'completed':
-        return 'Ukończony';
+        return t('status.completed');
       case 'in-progress':
-        return 'W trakcie';
+        return t('status.inProgress');
       case 'planned':
-        return 'Planowany';
+        return t('status.planned');
       default:
-        return 'Nieznany';
+        return t('status.unknown');
     }
   };
 
@@ -106,24 +116,28 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
   const handleAddComment = async (content: string, parentId?: string) => {
     try {
-      // TODO: Implement comment adding to GitHub
       console.log('Adding comment:', content, parentId);
+      await addComment(content, parentId);
+      console.log('Comment added successfully');
     } catch (error) {
       console.error('Error adding comment:', error);
+      // You could add a toast notification here
     }
   };
 
   const handleLikeComment = (commentId: string) => {
-    // TODO: Implement comment liking
     console.log('Liking comment:', commentId);
+    likeComment(commentId);
   };
 
   const handleReplyToComment = async (commentId: string, content: string) => {
     try {
-      // TODO: Implement comment replying to GitHub
       console.log('Replying to comment:', commentId, content);
+      await addComment(content, commentId);
+      console.log('Reply added successfully');
     } catch (error) {
       console.error('Error adding reply:', error);
+      // You could add a toast notification here
     }
   };
 

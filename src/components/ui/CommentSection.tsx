@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { Comment } from "../../types/section";
-import { Heart, MessageCircle, Reply, Send, User, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, MessageCircle, Reply, Send, User, ChevronDown, ChevronUp, Github } from "lucide-react";
 import MarkdownRenderer from "./MarkdownRenderer";
+import { useSession, signIn } from "next-auth/react";
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -18,25 +19,49 @@ export default function CommentSection({
   onLikeComment, 
   onReplyToComment 
 }: CommentSectionProps) {
+  const { data: session, status } = useSession();
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim()) {
-      onAddComment(newComment.trim());
-      setNewComment("");
+      // Check if user is logged in
+      if (!session) {
+        // Show login modal instead of redirecting
+        setShowLoginModal(true);
+        return;
+      }
+      
+      try {
+        await onAddComment(newComment.trim());
+        setNewComment("");
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      }
     }
   };
 
-  const handleSubmitReply = (e: React.FormEvent) => {
+  const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (replyContent.trim() && replyingTo) {
-      onReplyToComment(replyingTo, replyContent.trim());
-      setReplyContent("");
-      setReplyingTo(null);
+      // Check if user is logged in
+      if (!session) {
+        // Show login modal instead of redirecting
+        setShowLoginModal(true);
+        return;
+      }
+      
+      try {
+        await onReplyToComment(replyingTo, replyContent.trim());
+        setReplyContent("");
+        setReplyingTo(null);
+      } catch (error) {
+        console.error('Error adding reply:', error);
+      }
     }
   };
 
@@ -168,20 +193,27 @@ export default function CommentSection({
                 <User className="w-3 h-3 text-slate-300" />
               </div>
               <div className="flex-1">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Dodaj komentarz..."
-                  rows={2}
-                  className="w-full px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-400/50 focus:border-blue-400/50 resize-none"
-                />
-                <div className="flex justify-end mt-1">
+                    {session ? (
+                      <div className="text-xs text-slate-400 mb-1">
+                        Zalogowany jako: <span className="text-blue-400">{session.user?.name || session.githubUsername || 'GitHub User'}</span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-500 mb-1">
+                        Napisz komentarz i kliknij "Wyślij" aby się zalogować
+                      </div>
+                    )}
+                <div className="flex gap-2">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Napisz komentarz..."
+                    className="flex-1 h-8 px-2 py-1 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 text-sm placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-400/50 focus:border-blue-400/50 resize-none"
+                  />
                   <button
                     type="submit"
-                    className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-md transition-colors duration-200 flex items-center gap-1 text-xs"
+                    className="w-8 h-8 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-md transition-colors duration-200 flex items-center justify-center flex-shrink-0"
                   >
-                    <Send className="w-3 h-3" />
-                    <span>Wyślij</span>
+                    <Send className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -200,6 +232,55 @@ export default function CommentSection({
             )}
           </div>
         </>
+      )}
+
+      {/* Modal do logowania */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-slate-700/30">
+            <div className="text-center mb-6">
+              <Github className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">
+                Zaloguj się do GitHub
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Aby wysłać komentarz, musisz być zalogowany do GitHub
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowLoginModal(false);
+                  // Store the current URL and comment for after login
+                  localStorage.setItem('pendingComment', JSON.stringify({
+                    content: newComment,
+                    parentId: replyingTo,
+                    url: window.location.pathname
+                  }));
+                  signIn('github', { callbackUrl: window.location.pathname });
+                }}
+                className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200 border border-slate-600/50"
+              >
+                <Github className="w-5 h-5" />
+                <span>Zaloguj się przez GitHub</span>
+              </button>
+
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="w-full px-6 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors duration-200"
+              >
+                Anuluj
+              </button>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-xs text-slate-500">
+                Po zalogowaniu Twój komentarz zostanie automatycznie wysłany
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

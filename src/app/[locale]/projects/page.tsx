@@ -1,12 +1,15 @@
 "use client";
 
 import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import Image from "next/image";
-import { useGitHubProjects } from "../../hooks/useGitHubData";
-import { Project } from "../../types/section";
+import { useTranslations } from 'next-intl';
+import { useGitHubProjects } from "../../../hooks/useGitHubData";
+import { Project } from "../../../types/section";
 
 export default function ProjectsPage() {
+  const t = useTranslations('projects');
+  const tNav = useTranslations('nav');
   const router = useRouter();
   const { projects, loading, error } = useGitHubProjects();
 
@@ -30,13 +33,13 @@ export default function ProjectsPage() {
   const getStatusText = (status: Project['status']) => {
     switch (status) {
       case 'completed':
-        return 'Ukończony';
+        return t('status.completed');
       case 'in-progress':
-        return 'W trakcie';
+        return t('status.inProgress');
       case 'planned':
-        return 'Planowany';
+        return t('status.planned');
       default:
-        return 'Nieznany';
+        return t('status.unknown');
     }
   };
 
@@ -51,12 +54,12 @@ export default function ProjectsPage() {
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-200 group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-200" />
-              <span className="font-semibold text-lg">Powrót do strony głównej</span>
+              <span className="font-semibold text-lg">{tNav('backToHome')}</span>
             </button>
             
             <div className="flex items-center gap-2">
               <Code className="w-6 h-6 text-blue-500" />
-              <h1 className="text-xl font-bold text-white">Projekty</h1>
+              <h1 className="text-xl font-bold text-white">{t('title')}</h1>
             </div>
           </div>
         </div>
@@ -65,23 +68,23 @@ export default function ProjectsPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Moje Projekty</h2>
-          <p className="text-gray-400 text-lg">Kolekcja moich najważniejszych projektów programistycznych</p>
+          <h2 className="text-4xl font-bold text-white mb-4">{t('myProjects')}</h2>
+          <p className="text-gray-400 text-lg">{t('subtitle')}</p>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">Ładowanie projektów z GitHub...</p>
+            <p className="text-gray-400">{t('loading')}</p>
           </div>
         )}
 
         {/* Error State */}
         {error && (
           <div className="text-center py-12">
-            <p className="text-red-400 mb-4">Błąd ładowania projektów: {error}</p>
-            <p className="text-gray-400 text-sm">Sprawdź konfigurację GitHub API</p>
+            <p className="text-red-400 mb-4">{t('loadingError')} {error}</p>
+            <p className="text-gray-400 text-sm">{t('checkGitHub')}</p>
           </div>
         )}
 

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchIssueComments, createIssueComment, convertGitHubCommentToComment } from '../../../../../lib/github';
+import { fetchIssueComments, createIssueCommentWithToken, convertGitHubCommentToComment } from '../../../../../lib/github';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const issueNumber = parseInt(params.id);
+    const { id } = await params;
+    const issueNumber = parseInt(id);
     const comments = await fetchIssueComments(issueNumber);
     const convertedComments = comments.map(convertGitHubCommentToComment);
     
@@ -22,25 +23,42 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const issueNumber = parseInt(params.id);
-    const { content } = await request.json();
+    const { id } = await params;
+    const issueNumber = parseInt(id);
+    const { content, accessToken } = await request.json();
+    
+    console.log(`💬 API: Creating comment on issue #${issueNumber}`);
+    console.log(`📝 API: Comment content: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`);
     
     if (!content) {
+      console.error('❌ API: Content is required');
       return NextResponse.json(
         { error: 'Content is required' },
         { status: 400 }
       );
     }
+
+    if (!accessToken) {
+      console.error('❌ API: Access token is required');
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
     
-    const comment = await createIssueComment(issueNumber, content);
+    console.log(`🔑 API: User access token provided:`, !!accessToken);
+    
+    const comment = await createIssueCommentWithToken(issueNumber, content, accessToken);
     const convertedComment = convertGitHubCommentToComment(comment);
+    
+    console.log(`✅ API: Comment created successfully with ID: ${comment.id}`);
     
     return NextResponse.json(convertedComment);
   } catch (error) {
-    console.error('Error creating comment:', error);
+    console.error('❌ API: Error creating comment:', error);
     return NextResponse.json(
       { error: 'Failed to create comment' },
       { status: 500 }

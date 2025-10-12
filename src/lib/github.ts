@@ -182,27 +182,44 @@ export async function fetchIssueComments(issueNumber: number): Promise<GitHubCom
   }
 }
 
-// Create a new comment on an issue
-export async function createIssueComment(issueNumber: number, body: string): Promise<GitHubComment> {
+// Create a new comment on an issue using user's access token
+export async function createIssueCommentWithToken(issueNumber: number, body: string, accessToken: string): Promise<GitHubComment> {
   try {
-    const response = await fetch(`${GITHUB_API_BASE}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${issueNumber}/comments`, {
+    console.log(`💬 Creating comment on issue #${issueNumber} with user token`);
+    console.log(`📝 Comment content: ${body.substring(0, 100)}${body.length > 100 ? '...' : ''}`);
+    console.log(`🔑 GITHUB_OWNER:`, GITHUB_OWNER);
+    console.log(`🔑 GITHUB_REPO:`, GITHUB_REPO);
+    
+    const url = `${GITHUB_API_BASE}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${issueNumber}/comments`;
+    console.log(`🌐 Making POST request to: ${url}`);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
         'User-Agent': 'OpenFolio-App',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ body })
     });
 
+    console.log(`📊 GitHub API response status: ${response.status}`);
+
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`❌ GitHub API error: ${response.status} - ${errorText}`);
+      throw new Error(`GitHub API error: ${response.status} - ${errorText}`);
     }
 
-    return response.json();
+    const comment = await response.json();
+    console.log(`✅ Comment created successfully with ID: ${comment.id}`);
+    console.log(`🔗 Comment URL: ${comment.html_url}`);
+    
+    return comment;
   } catch (error) {
-    console.error(`Error creating comment on issue ${issueNumber}:`, error);
+    console.error(`❌ Error creating comment on issue ${issueNumber}:`, error);
     throw error;
   }
 }
@@ -261,6 +278,37 @@ function parseFrontmatter(body: string): any {
   return { frontmatter, content };
 }
 
+// Clean markdown content for project description (remove headers, keep only text)
+function cleanMarkdownForDescription(content: string): string {
+  if (!content) return 'Brak opisu projektu';
+  
+  // Remove markdown headers (##, ###, etc.)
+  let cleaned = content.replace(/^#{1,6}\s+/gm, '');
+  
+  // Remove markdown links but keep the text
+  cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  
+  // Remove markdown bold/italic formatting
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  cleaned = cleaned.replace(/\*([^*]+)\*/g, '$1');
+  
+  // Remove code blocks
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+  
+  // Remove extra whitespace and newlines
+  cleaned = cleaned.replace(/\n\s*\n/g, '\n');
+  cleaned = cleaned.trim();
+  
+  // Get first paragraph or first 200 characters
+  const firstParagraph = cleaned.split('\n')[0];
+  if (firstParagraph.length > 200) {
+    return firstParagraph.substring(0, 200) + '...';
+  }
+  
+  return firstParagraph || cleaned.substring(0, 200) + '...';
+}
+
 // Convert GitHub issue to Project format
 export function convertGitHubIssueToProject(issue: GitHubIssue): any {
   console.log(`🔄 Converting project issue #${issue.number}: ${issue.title}`);
@@ -282,7 +330,7 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): any {
   const projectData = {
     id: slug, // Use slug instead of issue number
     title: frontmatter.title || issue.title,
-    description: content || issue.body || 'Brak opisu projektu',
+    description: cleanMarkdownForDescription(content || issue.body || ''),
     thumbnailImage: frontmatter.thumbnailImage || '/next.svg',
     mainImage: frontmatter.mainImage || '/next.svg',
     technologies: frontmatter.technologies || issue.labels.map(label => label.name),
