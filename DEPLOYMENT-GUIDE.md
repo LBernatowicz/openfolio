@@ -190,7 +190,7 @@ docker-compose build --no-cache
 docker-compose up -d
 ```
 
-**Uwaga**: Dockerfile używa `--legacy-peer-deps` żeby rozwiązać konflikty zależności między next-auth a @auth/core.
+**Uwaga**: Dockerfile używa `npm install --omit=dev --legacy-peer-deps --force --no-audit --no-fund` żeby rozwiązać konflikty zależności. Opcje `--force` ignoruje konflikty peer dependencies, a `--no-audit --no-fund` przyspiesza instalację.
 
 ### Problem: Błąd "bun install --frozen-lockfile"
 
