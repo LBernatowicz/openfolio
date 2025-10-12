@@ -1,57 +1,42 @@
-# Dockerfile
-FROM node:18-alpine AS base
+# Prosty Dockerfile dla OpenFolio
+FROM node:18-alpine
 
-# Install dependencies only when needed
-FROM base AS deps
+# Instaluj zależności systemowe
 RUN apk add --no-cache libc6-compat
+
+# Ustaw katalog roboczy
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Skopiuj pliki package
 COPY package.json ./
-RUN npm install --omit=dev --legacy-peer-deps --force --no-audit --no-fund
 
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY package.json ./
+# Zainstaluj wszystkie zależności (w tym dev dependencies)
 RUN npm install --legacy-peer-deps --force --no-audit --no-fund
+
+# Skopiuj kod źródłowy
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
+# Wyłącz telemetrię Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Zbuduj aplikację
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
-WORKDIR /app
-
+# Ustaw zmienne środowiskowe dla produkcji
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copy production node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-
-USER nextjs
-
-EXPOSE 3000
-
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Utwórz użytkownika non-root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Ustaw uprawnienia
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# Eksponuj port
+EXPOSE 3000
+
+# Uruchom aplikację
+CMD ["npm", "start"]
