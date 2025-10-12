@@ -177,8 +177,9 @@ docker-compose config
 
 ### Problem: Błąd konfliktu zależności npm
 
-Jeśli widzisz błąd `ERESOLVE could not resolve` lub konflikty peer dependencies:
+Jeśli widzisz błąd `ERESOLVE could not resolve` lub konflikty peer dependencies, spróbuj różnych opcji:
 
+#### Opcja 1: Standardowy Dockerfile (npm)
 ```bash
 # Wyczyść cache Docker
 docker system prune -a
@@ -190,10 +191,33 @@ docker-compose build --no-cache
 docker-compose up -d
 ```
 
-**Uwaga**: Dockerfile używa prostego, jednopoziomowego build:
-- Instaluje wszystkie zależności (w tym dev dependencies) w jednym kroku
-- Używa `npm install --legacy-peer-deps --force --no-audit --no-fund` do rozwiązania konfliktów
-- Buduje aplikację i uruchamia ją z `npm start`
+#### Opcja 2: Dockerfile z Yarn
+```bash
+# Użyj yarn zamiast npm
+docker-compose -f docker-compose.yarn.yml build --no-cache
+docker-compose -f docker-compose.yarn.yml up -d
+```
+
+#### Opcja 3: Dockerfile z Node.js 20
+```bash
+# Użyj najnowszego Node.js
+docker-compose -f docker-compose.node20.yml build --no-cache
+docker-compose -f docker-compose.node20.yml up -d
+```
+
+#### Opcja 4: Dockerfile z Ubuntu (bez Alpine)
+```bash
+# Zmień Dockerfile na wersję z Ubuntu
+# Edytuj Dockerfile i zmień FROM node:18-alpine na FROM node:18
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+**Uwaga**: Różne Dockerfile używają różnych podejść:
+- **Dockerfile**: npm z Alpine Linux
+- **Dockerfile.yarn**: yarn z Alpine Linux  
+- **Dockerfile.node20**: npm z Node.js 20
+- **Dockerfile z Ubuntu**: npm z Ubuntu (lepsza kompatybilność)
 
 ### Problem: Błąd "bun install --frozen-lockfile"
 

@@ -1,8 +1,5 @@
-# Prosty Dockerfile dla OpenFolio
-FROM node:18-alpine
-
-# Instaluj zależności systemowe
-RUN apk add --no-cache libc6-compat
+# Bardzo prosty Dockerfile dla OpenFolio
+FROM node:18
 
 # Ustaw katalog roboczy
 WORKDIR /app
@@ -10,8 +7,8 @@ WORKDIR /app
 # Skopiuj pliki package
 COPY package.json ./
 
-# Zainstaluj wszystkie zależności (w tym dev dependencies)
-RUN npm install --legacy-peer-deps --force --no-audit --no-fund
+# Zainstaluj wszystkie zależności z maksymalną tolerancją błędów
+RUN npm install --legacy-peer-deps --force --no-audit --no-fund --no-optional
 
 # Skopiuj kod źródłowy
 COPY . .
@@ -26,14 +23,6 @@ RUN npm run build
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-
-# Utwórz użytkownika non-root
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Ustaw uprawnienia
-RUN chown -R nextjs:nodejs /app
-USER nextjs
 
 # Eksponuj port
 EXPOSE 3000

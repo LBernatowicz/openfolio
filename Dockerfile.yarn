@@ -1,0 +1,42 @@
+# Alternatywny Dockerfile - używa yarn zamiast npm
+FROM node:18-alpine
+
+# Instaluj yarn i zależności systemowe
+RUN apk add --no-cache libc6-compat && \
+    npm install -g yarn
+
+# Ustaw katalog roboczy
+WORKDIR /app
+
+# Skopiuj pliki package
+COPY package.json ./
+
+# Użyj yarn do instalacji (lepiej radzi sobie z konfliktami)
+RUN yarn install --production --ignore-engines --network-timeout 1000000
+
+# Skopiuj kod źródłowy
+COPY . .
+
+# Wyłącz telemetrię Next.js
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Zbuduj aplikację
+RUN yarn build
+
+# Ustaw zmienne środowiskowe dla produkcji
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Utwórz użytkownika non-root
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs && \
+    chown -R nextjs:nodejs /app
+
+USER nextjs
+
+# Eksponuj port
+EXPOSE 3000
+
+# Uruchom aplikację
+CMD ["yarn", "start"]
