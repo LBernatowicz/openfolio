@@ -175,6 +175,23 @@ docker-compose logs openfolio
 docker-compose config
 ```
 
+### Problem: Błąd lightningcss na ARM64
+
+Jeśli widzisz błąd `Cannot find module '../lightningcss.linux-arm64-gnu.node'`:
+
+```bash
+# Wyczyść cache Docker
+docker system prune -a
+
+# Przebuduj bez cache
+docker-compose build --no-cache
+
+# Uruchom ponownie
+docker-compose up -d
+```
+
+**Uwaga**: Dockerfile używa `--platform=linux/amd64` żeby wymusić architekturę x86_64, która ma lepszą kompatybilność z natywnymi modułami Node.js.
+
 ### Problem: Błąd Turbopack na ARM64
 
 Jeśli widzisz błąd `TurbopackInternalError` lub `Failed to write page endpoint /_error`:

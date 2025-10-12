@@ -1,5 +1,5 @@
-# Bardzo prosty Dockerfile dla OpenFolio
-FROM node:18
+# Bardzo prosty Dockerfile dla OpenFolio (x86_64 dla kompatybilności)
+FROM --platform=linux/amd64 node:18
 
 # Ustaw katalog roboczy
 WORKDIR /app
