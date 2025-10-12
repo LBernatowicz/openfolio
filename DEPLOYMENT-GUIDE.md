@@ -7,6 +7,11 @@
 - Git
 - Dostęp do internetu
 
+**Uwaga**: 
+- Lokalnie możesz używać Bun (`bun install`, `bun run dev`)
+- W kontenerze Docker używamy npm dla kompatybilności
+- Na serwerze docelowym nie musisz instalować Bun ani npm - wszystko działa w kontenerze
+
 ## Kroki wdrożenia
 
 ### 1. Pobranie kodu
@@ -169,6 +174,23 @@ docker-compose logs openfolio
 # Sprawdź czy wszystkie zmienne środowiskowe są ustawione
 docker-compose config
 ```
+
+### Problem: Błąd "bun install --frozen-lockfile"
+
+Jeśli widzisz błąd związany z Bun w Dockerfile:
+
+```bash
+# Wyczyść cache Docker
+docker system prune -a
+
+# Przebuduj bez cache
+docker-compose build --no-cache
+
+# Uruchom ponownie
+docker-compose up -d
+```
+
+**Uwaga**: Dockerfile został zaktualizowany, żeby używać npm zamiast Bun dla lepszej kompatybilności.
 
 ### Problem: Błąd autoryzacji GitHub
 

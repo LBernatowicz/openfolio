@@ -9,6 +9,11 @@ Nowoczesne portfolio zintegrowane z GitHub Issues jako CMS.
 - Docker Compose 2.0+
 - Git
 
+**Uwaga**: 
+- Lokalnie możesz używać Bun (`bun install`, `bun run dev`)
+- W kontenerze Docker używamy npm dla kompatybilności
+- Na serwerze docelowym nie musisz instalować Bun ani npm
+
 ### Kroki wdrożenia
 
 1. **Pobierz kod**
