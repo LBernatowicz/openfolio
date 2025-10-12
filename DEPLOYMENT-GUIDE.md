@@ -175,6 +175,23 @@ docker-compose logs openfolio
 docker-compose config
 ```
 
+### Problem: Błąd Turbopack na ARM64
+
+Jeśli widzisz błąd `TurbopackInternalError` lub `Failed to write page endpoint /_error`:
+
+```bash
+# Wyczyść cache Docker
+docker system prune -a
+
+# Przebuduj bez cache
+docker-compose build --no-cache
+
+# Uruchom ponownie
+docker-compose up -d
+```
+
+**Uwaga**: Dockerfile używa `npx next build` zamiast `npm run build` żeby wyłączyć Turbopack, który ma problemy z architekturą ARM64.
+
 ### Problem: Błąd konfliktu zależności npm
 
 Jeśli widzisz błąd `ERESOLVE could not resolve` lub konflikty peer dependencies, spróbuj różnych opcji:

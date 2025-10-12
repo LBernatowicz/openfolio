@@ -16,8 +16,8 @@ COPY . .
 # Wyłącz telemetrię Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Zbuduj aplikację
-RUN npm run build
+# Zbuduj aplikację (bez Turbopack dla kompatybilności ARM64)
+RUN npx next build
 
 # Ustaw zmienne środowiskowe dla produkcji
 ENV NODE_ENV=production
