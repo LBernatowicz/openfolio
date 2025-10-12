@@ -1,5 +1,5 @@
-# Dockerfile z najnowszym Node.js (x86_64 dla kompatybilności)
-FROM --platform=linux/amd64 node:20-alpine
+# Dockerfile z najnowszym Node.js (kompatybilny z ARM64 i x86_64)
+FROM node:20-alpine
 
 # Instaluj zależności systemowe
 RUN apk add --no-cache libc6-compat
