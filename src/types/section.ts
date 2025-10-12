@@ -25,6 +25,7 @@ export interface Comment {
   parentId?: string; // dla odpowiedzi na komentarze
   likes: number;
   isLiked?: boolean;
+  avatar?: string; // URL awatara użytkownika
 }
 
 export interface Project {

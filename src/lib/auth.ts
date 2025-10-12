@@ -6,6 +6,7 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string
     githubUsername?: string
+    githubAvatar?: string
   }
 }
 
@@ -13,6 +14,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string
     githubUsername?: string
+    githubAvatar?: string
   }
 }
 
@@ -21,6 +23,11 @@ export const authOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "read:user user:email repo"
+        }
+      }
     })
   ],
   callbacks: {
@@ -28,18 +35,25 @@ export const authOptions = {
       if (account) {
         token.accessToken = account.access_token
         token.githubUsername = profile?.login
+        token.githubAvatar = profile?.avatar_url
+        console.log('JWT callback - profile:', profile)
+        console.log('JWT callback - account:', account)
       }
       return token
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken
       session.githubUsername = token.githubUsername
+      session.githubAvatar = token.githubAvatar
+      console.log('Session callback - session:', session)
+      console.log('Session callback - token:', token)
       return session
     },
   },
   pages: {
     signIn: '/auth/signin',
   },
+  debug: true,
 }
 
 export default NextAuth(authOptions)

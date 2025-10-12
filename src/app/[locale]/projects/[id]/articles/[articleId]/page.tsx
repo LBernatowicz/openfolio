@@ -61,10 +61,27 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     });
   };
 
-  // Initialize comments from article
+  // Load comments from API
+  const loadComments = async () => {
+    if (!article) return;
+    
+    try {
+      console.log('Loading comments for article:', article.id);
+      const response = await fetch(`/api/projects/${article.id}/comments`);
+      if (response.ok) {
+        const commentsData = await response.json();
+        setComments(commentsData);
+        console.log('Comments loaded from API:', commentsData.length);
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    }
+  };
+
+  // Initialize comments from API
   useEffect(() => {
-    if (article?.comments) {
-      setComments(article.comments);
+    if (article) {
+      loadComments();
     }
   }, [article]);
 
@@ -192,17 +209,102 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     return project.entries.findIndex(e => e.id === articleId) + 1;
   };
 
-  const handleAddComment = (content: string, parentId?: string) => {
-    const newComment: Comment = {
-      id: Date.now().toString(),
-      author: tComments('user'),
-      content,
-      date: new Date().toISOString(),
-      parentId,
-      likes: 0,
-      isLiked: false
-    };
-    setComments(prev => [...prev, newComment]);
+  const handleAddComment = async (content: string, parentId?: string, isAnonymous?: boolean, displayName?: string) => {
+    try {
+      console.log('Adding comment:', content, parentId, isAnonymous, displayName);
+      
+      if (!article) {
+        console.error('No article found');
+        throw new Error('No article found');
+      }
+      
+      console.log('Article ID:', article.id);
+      
+      // Get access token from session (only if not anonymous)
+      let session = null;
+      if (!isAnonymous) {
+        const response = await fetch('/api/auth/session');
+        session = await response.json();
+        
+        console.log('Session response:', session);
+        
+        if (!session.accessToken) {
+          console.error('No access token in session');
+          throw new Error('User must be logged in to add comments');
+        }
+        
+        // Test if the access token is valid by making a simple GitHub API call
+        console.log('Testing access token validity...');
+        try {
+          const testResponse = await fetch('https://api.github.com/user', {
+            headers: {
+              'Authorization': `Bearer ${session.accessToken}`,
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+            }
+          });
+          
+          if (!testResponse.ok) {
+            console.error('Access token is invalid or expired:', testResponse.status);
+            throw new Error('Access token is invalid or expired. Please log in again.');
+          }
+          
+          const userInfo = await testResponse.json();
+          console.log('Access token is valid for user:', userInfo.login);
+        } catch (tokenError) {
+          console.error('Token validation failed:', tokenError);
+          throw new Error('Access token is invalid or expired. Please log in again.');
+        }
+      }
+      
+      console.log('Making API call to add comment...');
+      
+      const response2 = await fetch(`/api/projects/${article.id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          accessToken: session?.accessToken || null,
+          userInfo: isAnonymous ? {
+            username: displayName || 'Anonimowy',
+            name: displayName || 'Anonimowy',
+            avatar: null
+          } : {
+            username: session?.githubUsername,
+            name: session?.user?.name,
+            avatar: session?.githubAvatar
+          },
+          isAnonymous: !!isAnonymous
+        }),
+      });
+      
+      console.log('API response status:', response2.status);
+      
+      if (!response2.ok) {
+        const errorText = await response2.text();
+        console.error('API error response:', errorText);
+        
+        // Check if it's an authentication error
+        if (response2.status === 401 || response2.status === 403) {
+          throw new Error('Authentication failed. Please log in again.');
+        }
+        
+        throw new Error(`Failed to add comment: ${response2.status} - ${errorText}`);
+      }
+      
+      const newComment = await response2.json();
+      console.log('New comment received:', newComment);
+      setComments(prev => [...prev, newComment]);
+      console.log('Comment added successfully');
+      
+      // Reload comments to ensure consistency
+      await loadComments();
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      throw error;
+    }
   };
 
   const handleLikeComment = (commentId: string) => {

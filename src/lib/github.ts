@@ -230,52 +230,98 @@ function parseFrontmatter(body: string): any {
   
   console.log('Parsing frontmatter from body:', body.substring(0, 200) + '...');
   
-  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
-  const match = body.match(frontmatterRegex);
+  // Try YAML frontmatter format first (---)
+  const yamlFrontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
+  const yamlMatch = body.match(yamlFrontmatterRegex);
   
-  if (!match) {
-    console.log('No frontmatter found in body, using entire body as content');
-    return { frontmatter: {}, content: body };
-  }
-  
-  const frontmatterText = match[1];
-  const content = match[2];
-  
-  console.log('Frontmatter text:', frontmatterText);
-  console.log('Content after frontmatter:', content.substring(0, 100) + '...');
-  
-  const frontmatter: any = {};
-  const lines = frontmatterText.split('\n');
-  
-  for (const line of lines) {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex === -1) continue;
+  if (yamlMatch) {
+    const frontmatterText = yamlMatch[1];
+    const content = yamlMatch[2];
     
-    const key = line.substring(0, colonIndex).trim();
-    let value = line.substring(colonIndex + 1).trim();
+    console.log('YAML frontmatter found:', frontmatterText);
+    console.log('Content after YAML frontmatter:', content.substring(0, 100) + '...');
     
-    // Remove quotes
-    if ((value.startsWith('"') && value.endsWith('"')) || 
-        (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
-    }
+    const frontmatter: any = {};
+    const lines = frontmatterText.split('\n');
     
-    // Parse arrays
-    if (value.startsWith('[') && value.endsWith(']')) {
-      try {
-        value = JSON.parse(value);
-      } catch {
-        // If JSON parsing fails, treat as string
+    for (const line of lines) {
+      const colonIndex = line.indexOf(':');
+      if (colonIndex === -1) continue;
+      
+      const key = line.substring(0, colonIndex).trim();
+      let value = line.substring(colonIndex + 1).trim();
+      
+      // Remove quotes
+      if ((value.startsWith('"') && value.endsWith('"')) || 
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
       }
+      
+      // Parse arrays
+      if (value.startsWith('[') && value.endsWith(']')) {
+        try {
+          value = JSON.parse(value);
+        } catch {
+          // If JSON parsing fails, treat as string
+        }
+      }
+      
+      frontmatter[key] = value;
+      console.log(`Parsed frontmatter key: ${key} = ${value}`);
     }
     
-    frontmatter[key] = value;
-    console.log(`Parsed frontmatter key: ${key} = ${value}`);
+    console.log('Final frontmatter:', frontmatter);
+    console.log('Final content length:', content.length);
+    return { frontmatter, content };
   }
   
-  console.log('Final frontmatter:', frontmatter);
-  console.log('Final content length:', content.length);
-  return { frontmatter, content };
+  // Try key: value format (no ---)
+  const keyValueRegex = /^([^:\n]+:[^\n]*\n?)+/;
+  const keyValueMatch = body.match(keyValueRegex);
+  
+  if (keyValueMatch) {
+    const frontmatterText = keyValueMatch[0];
+    const content = body.substring(frontmatterText.length);
+    
+    console.log('Key-value frontmatter found:', frontmatterText);
+    console.log('Content after key-value frontmatter:', content.substring(0, 100) + '...');
+    
+    const frontmatter: any = {};
+    const lines = frontmatterText.split('\n');
+    
+    for (const line of lines) {
+      const colonIndex = line.indexOf(':');
+      if (colonIndex === -1) continue;
+      
+      const key = line.substring(0, colonIndex).trim();
+      let value = line.substring(colonIndex + 1).trim();
+      
+      // Remove quotes
+      if ((value.startsWith('"') && value.endsWith('"')) || 
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      
+      // Parse arrays
+      if (value.startsWith('[') && value.endsWith(']')) {
+        try {
+          value = JSON.parse(value);
+        } catch {
+          // If JSON parsing fails, treat as string
+        }
+      }
+      
+      frontmatter[key] = value;
+      console.log(`Parsed frontmatter key: ${key} = ${value}`);
+    }
+    
+    console.log('Final frontmatter:', frontmatter);
+    console.log('Final content length:', content.length);
+    return { frontmatter, content };
+  }
+  
+  console.log('No frontmatter found in body, using entire body as content');
+  return { frontmatter: {}, content: body };
 }
 
 // Clean markdown content for project description (remove headers, keep only text)
@@ -328,7 +374,7 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): any {
   console.log(`Generated slug: ${slug}`);
   
   const projectData = {
-    id: slug, // Use slug instead of issue number
+    id: issue.number.toString(), // Use issue number as ID
     title: frontmatter.title || issue.title,
     description: cleanMarkdownForDescription(content || issue.body || ''),
     thumbnailImage: frontmatter.thumbnailImage || '/next.svg',
@@ -380,6 +426,7 @@ export function convertGitHubIssueToArticle(issue: GitHubIssue): any {
     content: content || issue.body || '',
     date: frontmatter.date || issue.created_at,
     image: frontmatter.image,
+    version: frontmatter.version,
     comments: []
   };
   
@@ -397,6 +444,7 @@ export function convertGitHubCommentToComment(comment: GitHubComment): any {
     date: comment.created_at,
     likes: 0, // GitHub doesn't have likes, could use reactions API
     isLiked: false,
-    githubUrl: comment.html_url
+    githubUrl: comment.html_url,
+    avatar: comment.user.avatar_url
   };
 }
