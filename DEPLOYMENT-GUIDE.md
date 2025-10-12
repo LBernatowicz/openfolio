@@ -175,6 +175,23 @@ docker-compose logs openfolio
 docker-compose config
 ```
 
+### Problem: Błąd konfliktu zależności npm
+
+Jeśli widzisz błąd `ERESOLVE could not resolve` lub konflikty peer dependencies:
+
+```bash
+# Wyczyść cache Docker
+docker system prune -a
+
+# Przebuduj bez cache
+docker-compose build --no-cache
+
+# Uruchom ponownie
+docker-compose up -d
+```
+
+**Uwaga**: Dockerfile używa `--legacy-peer-deps` żeby rozwiązać konflikty zależności między next-auth a @auth/core.
+
 ### Problem: Błąd "bun install --frozen-lockfile"
 
 Jeśli widzisz błąd związany z Bun w Dockerfile:
