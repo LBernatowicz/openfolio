@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 import fs from 'fs';
 import path from 'path';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,7 +85,7 @@ Wysłane z portfolio: ${process.env.NEXT_PUBLIC_SITE_URL || 'localhost:3000'}
   `.trim();
 
   // Check if we have a valid Resend API key
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'your_resend_api_key_here') {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'your_resend_api_key_here' || process.env.RESEND_API_KEY === 'dummy-key-for-build') {
     console.log('\n📧 EMAIL NOTIFICATION (DEVELOPMENT MODE):');
     console.log(emailContent);
     console.log('---\n');
@@ -122,7 +122,7 @@ CV w załączniku
   `.trim();
 
   // Check if we have a valid Resend API key
-  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'your_resend_api_key_here') {
+  if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 'your_resend_api_key_here' || process.env.RESEND_API_KEY === 'dummy-key-for-build') {
     console.log('\n📧 CV EMAIL (DEVELOPMENT MODE):');
     console.log(`To: ${data.email}`);
     console.log(`Subject: Twoje CV - Łukasz Bernatowicz`);
