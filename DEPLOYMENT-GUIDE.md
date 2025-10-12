@@ -190,7 +190,12 @@ docker-compose build --no-cache
 docker-compose up -d
 ```
 
-**Uwaga**: Dockerfile używa `npm install --omit=dev --legacy-peer-deps --force --no-audit --no-fund` żeby rozwiązać konflikty zależności. Opcje `--force` ignoruje konflikty peer dependencies, a `--no-audit --no-fund` przyspiesza instalację.
+**Uwaga**: Dockerfile używa dwustopniowej instalacji npm:
+- Etap `deps`: tylko zależności produkcyjne (`--omit=dev`)
+- Etap `builder`: wszystkie zależności (w tym dev dependencies jak TypeScript)
+- Etap `runner`: kopiuje tylko potrzebne pliki z builder
+
+Opcje `--legacy-peer-deps --force --no-audit --no-fund` rozwiązują konflikty zależności.
 
 ### Problem: Błąd "bun install --frozen-lockfile"
 

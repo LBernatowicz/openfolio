@@ -13,7 +13,8 @@ RUN npm install --omit=dev --legacy-peer-deps --force --no-audit --no-fund
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./
+RUN npm install --legacy-peer-deps --force --no-audit --no-fund
 COPY . .
 
 # Next.js collects completely anonymous telemetry data about general usage.
@@ -42,6 +43,9 @@ RUN chown nextjs:nodejs .next
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy production node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 USER nextjs
 
