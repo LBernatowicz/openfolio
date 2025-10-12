@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Project, Comment } from '../types/section';
 import { isGitHubAvailable, getFallbackProjects } from '../lib/dataSource';
 import { useSession } from 'next-auth/react';
@@ -25,7 +25,7 @@ export function useGitHubProjects() {
         
         const data = await response.json();
         console.log('Projects data received:', data);
-        console.log('Projects with entries:', data.filter((p: any) => p.entries && p.entries.length > 0));
+        console.log('Projects with entries:', data.filter((p: Project) => p.entries && p.entries.length > 0));
         console.log('First project entries:', data[0]?.entries);
         
         // Check if we're using fallback data
@@ -148,7 +148,7 @@ export function useProjectComments(projectId: string) {
     }
   }, [session?.accessToken, pendingComment]);
 
-  const addComment = async (content: string, parentId?: string) => {
+  const addComment = useCallback(async (content: string, parentId?: string) => {
     try {
       console.log(`💬 Hook: Adding comment to project ${projectId}`);
       console.log(`📝 Hook: Comment content: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`);
@@ -207,7 +207,7 @@ export function useProjectComments(projectId: string) {
       console.error('❌ Hook: Error adding comment:', err);
       throw err;
     }
-  };
+  }, [projectId, session?.accessToken]);
 
   const likeComment = (commentId: string) => {
     // GitHub doesn't have native likes, but we can simulate it locally

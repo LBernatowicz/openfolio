@@ -1,4 +1,4 @@
-import NextAuth from "next-auth"
+import NextAuth, { type AuthOptions } from "next-auth"
 import GitHubProvider from "next-auth/providers/github"
 
 // Extend NextAuth types
@@ -18,7 +18,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
@@ -34,8 +34,10 @@ export const authOptions = {
     async jwt({ token, account, profile }) {
       if (account) {
         token.accessToken = account.access_token
-        token.githubUsername = profile?.login
-        token.githubAvatar = profile?.avatar_url
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.githubUsername = (profile as any)?.login
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.githubAvatar = (profile as any)?.avatar_url
         console.log('JWT callback - profile:', profile)
         console.log('JWT callback - account:', account)
       }

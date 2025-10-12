@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Briefcase, Calendar, MapPin, ExternalLink } from "lucide-react";
+import { ArrowLeft, Briefcase, Calendar, MapPin } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 

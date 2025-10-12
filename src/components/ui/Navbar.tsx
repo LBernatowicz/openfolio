@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Palette, Sun, Moon, Monitor, Globe } from "lucide-react";
+import { ArrowLeft, Globe } from "lucide-react";
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
-
-type Theme = "dark" | "light" | "system";
 
 export default function Navbar() {
   const t = useTranslations('nav');
@@ -13,24 +11,9 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   
-  const [theme, setTheme] = useState<Theme>("dark");
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-  const handleThemeChange = (newTheme: Theme) => {
-    setTheme(newTheme);
-    setIsThemeMenuOpen(false);
-    
-    if (newTheme === "light") {
-      document.documentElement.classList.remove("dark");
-    } else if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
 
   const handleLanguageChange = (newLocale: string) => {
     setIsLanguageMenuOpen(false);
@@ -59,17 +42,6 @@ export default function Navbar() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case "light":
-        return <Sun className="w-4 h-4" />;
-      case "dark":
-        return <Moon className="w-4 h-4" />;
-      case "system":
-        return <Monitor className="w-4 h-4" />;
-    }
-  };
 
   const getLanguageFlag = () => {
     switch (locale) {

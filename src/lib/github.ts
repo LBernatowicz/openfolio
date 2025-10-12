@@ -225,7 +225,7 @@ export async function createIssueCommentWithToken(issueNumber: number, body: str
 }
 
 // Parse frontmatter from issue body
-function parseFrontmatter(body: string): any {
+function parseFrontmatter(body: string): {frontmatter: Record<string, unknown>, content: string} {
   if (!body) return { frontmatter: {}, content: '' };
   
   console.log('Parsing frontmatter from body:', body.substring(0, 200) + '...');
@@ -241,7 +241,7 @@ function parseFrontmatter(body: string): any {
     console.log('YAML frontmatter found:', frontmatterText);
     console.log('Content after YAML frontmatter:', content.substring(0, 100) + '...');
     
-    const frontmatter: any = {};
+    const frontmatter: Record<string, unknown> = {};
     const lines = frontmatterText.split('\n');
     
     for (const line of lines) {
@@ -286,7 +286,7 @@ function parseFrontmatter(body: string): any {
     console.log('Key-value frontmatter found:', frontmatterText);
     console.log('Content after key-value frontmatter:', content.substring(0, 100) + '...');
     
-    const frontmatter: any = {};
+    const frontmatter: Record<string, unknown> = {};
     const lines = frontmatterText.split('\n');
     
     for (const line of lines) {
@@ -356,7 +356,7 @@ function cleanMarkdownForDescription(content: string): string {
 }
 
 // Convert GitHub issue to Project format
-export function convertGitHubIssueToProject(issue: GitHubIssue): any {
+export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, title: string, description: string, thumbnailImage: string, mainImage: string, technologies: string[], status: string, githubUrl: string, liveUrl?: string, comments: unknown[], entries: unknown[]} {
   console.log(`🔄 Converting project issue #${issue.number}: ${issue.title}`);
   console.log(`Issue body length: ${issue.body ? issue.body.length : 0}`);
   
@@ -375,14 +375,14 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): any {
   
   const projectData = {
     id: issue.number.toString(), // Use issue number as ID
-    title: frontmatter.title || issue.title,
+    title: (frontmatter.title as string) || issue.title,
     description: cleanMarkdownForDescription(content || issue.body || ''),
-    thumbnailImage: frontmatter.thumbnailImage || '/next.svg',
-    mainImage: frontmatter.mainImage || '/next.svg',
-    technologies: frontmatter.technologies || issue.labels.map(label => label.name),
-    status: frontmatter.status || (issue.state === 'closed' ? 'completed' : 'in-progress'),
+    thumbnailImage: (frontmatter.thumbnailImage as string) || '/next.svg',
+    mainImage: (frontmatter.mainImage as string) || '/next.svg',
+    technologies: (frontmatter.technologies as string[]) || issue.labels.map(label => label.name),
+    status: (frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : 'in-progress'),
     githubUrl: issue.html_url,
-    liveUrl: frontmatter.liveUrl || extractLiveUrl(issue.body),
+    liveUrl: (frontmatter.liveUrl as string) || extractLiveUrl(issue.body),
     comments: [], // Will be loaded separately
     entries: [] // Will be loaded from related issues
   };
@@ -412,7 +412,7 @@ function extractLiveUrl(body: string): string | undefined {
 }
 
 // Convert GitHub issue to Article format
-export function convertGitHubIssueToArticle(issue: GitHubIssue): any {
+export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, title: string, content: string, date: string, image?: string, version?: string, comments: unknown[]} {
   console.log(`🔄 Converting article issue #${issue.number}: ${issue.title}`);
   console.log(`Issue body length: ${issue.body ? issue.body.length : 0}`);
   
@@ -422,11 +422,11 @@ export function convertGitHubIssueToArticle(issue: GitHubIssue): any {
   
   const article = {
     id: issue.number.toString(), // Use issue number as ID
-    title: frontmatter.title || issue.title,
+    title: (frontmatter.title as string) || issue.title,
     content: content || issue.body || '',
-    date: frontmatter.date || issue.created_at,
-    image: frontmatter.image,
-    version: frontmatter.version,
+    date: (frontmatter.date as string) || issue.created_at,
+    image: frontmatter.image as string | undefined,
+    version: frontmatter.version as string | undefined,
     comments: []
   };
   
@@ -436,7 +436,7 @@ export function convertGitHubIssueToArticle(issue: GitHubIssue): any {
 
 
 // Convert GitHub comment to Comment format
-export function convertGitHubCommentToComment(comment: GitHubComment): any {
+export function convertGitHubCommentToComment(comment: GitHubComment): {id: string, author: string, content: string, date: string, likes: number, isLiked: boolean, githubUrl: string, avatar: string} {
   return {
     id: comment.id.toString(),
     author: comment.user.login,

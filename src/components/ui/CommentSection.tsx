@@ -19,13 +19,12 @@ export default function CommentSection({
   onLikeComment, 
   onReplyToComment 
 }: CommentSectionProps) {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(false);
   const [anonymousNickname, setAnonymousNickname] = useState("");
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -239,7 +238,7 @@ export default function CommentSection({
                       </div>
                     ) : (
                       <div className="text-xs text-slate-500 mb-1">
-                        Napisz komentarz i kliknij "Wyślij" aby się zalogować
+                        Napisz komentarz i kliknij &ldquo;Wyślij&rdquo; aby się zalogować
                       </div>
                     )}
                 <div className="flex gap-2">

@@ -2,9 +2,8 @@
 
 import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { useEffect, useRef, useState, use } from "react";
+import { useEffect, useRef, useState, use, useCallback } from "react";
 import { useTranslations, useLocale } from 'next-intl';
 import { Comment } from "@/types/section";
 import CommentSection from "@/components/ui/CommentSection";
@@ -20,13 +19,10 @@ interface ArticlePageProps {
 
 export default function ArticlePage({ params }: ArticlePageProps) {
   const t = useTranslations('projects');
-  const tNav = useTranslations('nav');
-  const tComments = useTranslations('comments');
   const tCommon = useTranslations('common');
   const tArticle = useTranslations('projects.article');
   const locale = useLocale();
   const router = useRouter();
-  const [showToc, setShowToc] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   const firstParagraphRef = useRef<HTMLParagraphElement>(null);
   const [tocItems, setTocItems] = useState<Array<{id: string, text: string, level: number}>>([]);
@@ -48,7 +44,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     const headings = content.match(/^#{1,6}\s+(.+)$/gm);
     if (!headings) return [];
     
-    return headings.map((heading, index) => {
+    return headings.map((heading) => {
       const level = heading.match(/^#+/)?.[0].length || 1;
       const text = heading.replace(/^#+\s+/, '');
       const id = text
@@ -62,7 +58,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   };
 
   // Load comments from API
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     if (!article) return;
     
     try {
@@ -76,14 +72,14 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     } catch (error) {
       console.error('Error loading comments:', error);
     }
-  };
+  }, [article]);
 
   // Initialize comments from API
   useEffect(() => {
     if (article) {
       loadComments();
     }
-  }, [article]);
+  }, [article, loadComments]);
 
   // Generate table of contents when article content changes
   useEffect(() => {
@@ -100,7 +96,6 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       ([entry]) => {
         console.log('First paragraph intersection:', entry.isIntersecting);
         console.log('Setting showToc to:', entry.isIntersecting);
-        setShowToc(entry.isIntersecting);
       },
       {
         threshold: 0.1,
@@ -108,13 +103,14 @@ export default function ArticlePage({ params }: ArticlePageProps) {
       }
     );
 
-    if (firstParagraphRef.current) {
-      observer.observe(firstParagraphRef.current);
+    const currentRef = firstParagraphRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (firstParagraphRef.current) {
-        observer.unobserve(firstParagraphRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [article?.content]);

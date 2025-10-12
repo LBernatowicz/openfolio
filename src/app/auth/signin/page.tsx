@@ -1,11 +1,9 @@
 "use client";
 
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { Github } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 export default function SignInPage() {
-  const t = useTranslations('auth');
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">

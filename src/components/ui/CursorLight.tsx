@@ -12,7 +12,7 @@ export default function CursorLight() {
       
       // Sprawdź czy kursor jest nad kartą
       const target = e.target as HTMLElement;
-      const isOverCard = target.closest('.card-hover, .card-hover-border, [class*="col-span-"], [class*="row-span-"]');
+      target.closest('.card-hover, .card-hover-border, [class*="col-span-"], [class*="row-span-"]');
       
       // Pokaż lampkę zawsze - światło jest widoczne na całym ekranie
       // ale będzie zasłonięte przez wewnętrzne tło kart

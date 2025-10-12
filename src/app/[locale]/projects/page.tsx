@@ -2,10 +2,8 @@
 
 import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
-import Image from "next/image";
 import { useTranslations } from 'next-intl';
 import { useGitHubProjects } from "../../../hooks/useGitHubData";
-import { Project } from "../../../types/section";
 
 export default function ProjectsPage() {
   const t = useTranslations('projects');
@@ -15,32 +13,6 @@ export default function ProjectsPage() {
 
   const handleProjectClick = (projectId: string) => {
     router.push(`/projects/${projectId}`);
-  };
-
-  const getStatusColor = (status: Project['status']) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-400 bg-green-400/10';
-      case 'in-progress':
-        return 'text-yellow-400 bg-yellow-400/10';
-      case 'planned':
-        return 'text-blue-400 bg-blue-400/10';
-      default:
-        return 'text-gray-400 bg-gray-400/10';
-    }
-  };
-
-  const getStatusText = (status: Project['status']) => {
-    switch (status) {
-      case 'completed':
-        return t('status.completed');
-      case 'in-progress':
-        return t('status.inProgress');
-      case 'planned':
-        return t('status.planned');
-      default:
-        return t('status.unknown');
-    }
   };
 
   return (

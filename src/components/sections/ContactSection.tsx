@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, MapPin, Linkedin, Github, ExternalLink, MessageCircle } from "lucide-react";
+import { Mail, MapPin, Linkedin, Github, MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import SectionWrapper from "../ui/SectionWrapper";
 import Image from "next/image";

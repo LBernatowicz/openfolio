@@ -3,9 +3,8 @@
 import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useGitHubProjects, useProjectComments } from "../../../hooks/useGitHubData";
-import { Project, ProjectEntry, Comment } from "../../../types/section";
-import { notFound } from "next/navigation";
+import { useGitHubProjects } from "../../../hooks/useGitHubData";
+import { Project, Comment } from "../../../types/section";
 import CommentSection from "../../../components/ui/CommentSection";
 import MarkdownRenderer from "../../../components/ui/MarkdownRenderer";
 import { useState, useEffect, use } from "react";

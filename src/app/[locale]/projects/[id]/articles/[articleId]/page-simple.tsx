@@ -21,8 +21,8 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   const locale = useLocale();
   const router = useRouter();
   const { id, articleId } = use(params);
-  const [article, setArticle] = useState<any>(null);
-  const [project, setProject] = useState<any>(null);
+  const [article, setArticle] = useState<{id: string, title: string, content: string, date: string} | null>(null);
+  const [project, setProject] = useState<{id: string, title: string, entries?: Array<{id: string, title: string, content: string, date: string}>} | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,13 +36,13 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         
         console.log('📊 Projects received:', projects.length);
         
-        const foundProject = projects.find((p: any) => p.id === id);
+        const foundProject = projects.find((p: {id: string}) => p.id === id);
         console.log('✅ Found project:', foundProject ? 'YES' : 'NO');
         
         if (foundProject) {
           setProject(foundProject);
           
-          const foundArticle = foundProject.entries?.find((e: any) => e.id === articleId);
+          const foundArticle = foundProject.entries?.find((e: {id: string}) => e.id === articleId);
           console.log('✅ Found article:', foundArticle ? 'YES' : 'NO');
           
           if (foundArticle) {

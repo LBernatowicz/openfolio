@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Quote } from "lucide-react";
 import VerticalGroup from "../ui/VerticalGroup";
 
 const quotes = [
@@ -63,7 +62,7 @@ export default function QuoteSection() {
         <div className="absolute inset-0 bg-black rounded-2xl -z-10"></div>
         <div className="text-center w-full relative z-10">
           <blockquote className="text-base italic text-gray-300 mb-2 min-h-[40px] flex items-center justify-center">
-            "{quotes[currentQuote].text}"
+            &ldquo;{quotes[currentQuote].text}&rdquo;
           </blockquote>
           <cite className="text-gray-400 text-sm">- {quotes[currentQuote].author}</cite>
           

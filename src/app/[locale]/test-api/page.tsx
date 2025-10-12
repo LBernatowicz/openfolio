@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 export default function TestAPIPage() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<Array<{id: string, title: string, entries?: Array<{id: string, title: string, date: string}>}> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,13 +34,13 @@ export default function TestAPIPage() {
         <h2 className="text-xl mb-2">Projects Count: {data?.length || 0}</h2>
       </div>
 
-      {data?.map((project: any, idx: number) => (
+      {data?.map((project, idx: number) => (
         <div key={idx} className="border border-gray-700 p-4 mb-4 rounded">
           <h3 className="text-lg font-bold">{project.title}</h3>
           <p>ID: {project.id}</p>
           <p>Entries: {project.entries?.length || 0}</p>
           
-          {project.entries?.map((entry: any, entryIdx: number) => (
+          {project.entries?.map((entry, entryIdx: number) => (
             <div key={entryIdx} className="ml-4 mt-2 border-l-2 border-blue-500 pl-2">
               <p className="font-semibold">Article: {entry.title}</p>
               <p className="text-sm">ID: {entry.id}</p>

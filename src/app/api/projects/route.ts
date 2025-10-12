@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { NextResponse } from 'next/server';
 import { fetchGitHubProjectsWithArticles, convertGitHubIssueToProject, convertGitHubIssueToArticle, convertGitHubCommentToComment } from '../../../lib/github';
-import { getDataSource, DATA_SOURCE, getFallbackProjects, isGitHubAvailableServerSide } from '../../../lib/dataSource';
+import { getFallbackProjects, isGitHubAvailableServerSide } from '../../../lib/dataSource';
 
 export async function GET() {
   try {

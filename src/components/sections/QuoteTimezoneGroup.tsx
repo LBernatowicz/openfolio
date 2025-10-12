@@ -52,7 +52,7 @@ export default function QuoteTimezoneGroup() {
     }, 5000); // Zmiana co 5 sekund
 
     return () => clearInterval(interval);
-  }, []);
+  }, [quotes.length]);
 
   // Aktualizacja czasu co sekundę
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function QuoteTimezoneGroup() {
         <div className="absolute inset-0 bg-black rounded-2xl -z-10"></div>
         <div className="text-center w-full relative z-10">
           <blockquote className="text-base italic text-gray-300 mb-2 min-h-[110px] flex items-center justify-center">
-            "{quotes[currentQuote].text}"
+            &ldquo;{quotes[currentQuote].text}&rdquo;
           </blockquote>
           <cite className="text-gray-400 text-sm">- {quotes[currentQuote].author}</cite>
           

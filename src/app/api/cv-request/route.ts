@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     console.log('  Timestamp:', timestamp);
     console.log('  User Agent:', userAgent);
     console.log('  Referrer:', referrer);
-    console.log('  IP Address:', request.ip || request.headers.get('x-forwarded-for') || 'unknown');
+    console.log('  IP Address:', request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown');
     console.log('---');
 
     // Send notification email to you
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         timestamp,
         userAgent,
         referrer,
-        ip: request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
       });
       console.log('✅ Notification email sent successfully');
     } catch (emailError) {

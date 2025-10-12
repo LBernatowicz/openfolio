@@ -82,12 +82,14 @@ export default function MarkdownRenderer({ content, className = "", firstParagra
           },
           
           // Code blocks
-          code: ({ node, className, children, ...props }: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          code: ({ className, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(className || '');
             const inline = !match;
             
             return !inline && match ? (
               <SyntaxHighlighter
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 style={vscDarkPlus as any}
                 language={match[1]}
                 PreTag="div"

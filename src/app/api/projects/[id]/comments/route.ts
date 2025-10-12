@@ -77,7 +77,7 @@ function extractUserInfoFromComment(content: string) {
 }
 
 // Function to add user info header to comment content
-function addUserInfoToComment(content: string, userInfo: any) {
+function addUserInfoToComment(content: string, userInfo: {username: string, avatar: string | null, isAnonymous: boolean}) {
   const header = `<!-- USER_INFO: ${JSON.stringify(userInfo)} -->\n`;
   return header + content;
 }
