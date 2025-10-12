@@ -2,14 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { ArrowLeft, Palette, Sun, Moon, Monitor, Globe } from "lucide-react";
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter, usePathname } from '@/i18n/routing';
 
 type Theme = "dark" | "light" | "system";
-type Language = "pl" | "en";
 
 export default function Navbar() {
+  const t = useTranslations('nav');
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [theme, setTheme] = useState<Theme>("dark");
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<Language>("pl");
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -18,21 +23,18 @@ export default function Navbar() {
     setTheme(newTheme);
     setIsThemeMenuOpen(false);
     
-    // Tutaj można dodać logikę zmiany motywu
     if (newTheme === "light") {
       document.documentElement.classList.remove("dark");
     } else if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
-      // System theme - usuń wszystkie klasy i pozwól systemowi decydować
       document.documentElement.classList.remove("dark");
     }
   };
 
-  const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage);
+  const handleLanguageChange = (newLocale: string) => {
     setIsLanguageMenuOpen(false);
-    // Tutaj można dodać logikę zmiany języka
+    router.replace(pathname, { locale: newLocale });
   };
 
   useEffect(() => {
@@ -70,21 +72,18 @@ export default function Navbar() {
   };
 
   const getLanguageFlag = () => {
-    switch (language) {
+    switch (locale) {
       case "pl":
         return "🇵🇱";
       case "en":
         return "🇺🇸";
+      default:
+        return "🇵🇱";
     }
   };
 
   const getLanguageName = () => {
-    switch (language) {
-      case "pl":
-        return "Polski";
-      case "en":
-        return "English";
-    }
+    return t(`language.${locale === 'pl' ? 'polish' : 'english'}`);
   };
 
   return (
@@ -122,67 +121,20 @@ export default function Navbar() {
                     <button
                       onClick={() => handleLanguageChange("pl")}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-700 transition-colors duration-200 ${
-                        language === "pl" ? "text-cyan-400 bg-slate-700" : "text-white"
+                        locale === "pl" ? "text-cyan-400 bg-slate-700" : "text-white"
                       }`}
                     >
                       <span className="text-lg">🇵🇱</span>
-                      <span>Polski</span>
+                      <span>{t('language.polish')}</span>
                     </button>
                     <button
                       onClick={() => handleLanguageChange("en")}
                       className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-700 transition-colors duration-200 ${
-                        language === "en" ? "text-cyan-400 bg-slate-700" : "text-white"
+                        locale === "en" ? "text-cyan-400 bg-slate-700" : "text-white"
                       }`}
                     >
                       <span className="text-lg">🇺🇸</span>
-                      <span>English</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Przełącznik palety kolorów */}
-            <div className="relative">
-              <button
-                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 transition-all duration-200 group"
-              >
-                <Palette className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-medium text-white">Paleta</span>
-                {getThemeIcon()}
-              </button>
-
-              {/* Theme dropdown menu */}
-              {isThemeMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden">
-                  <div className="py-1">
-                    <button
-                      onClick={() => handleThemeChange("dark")}
-                      className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-700 transition-colors duration-200 ${
-                        theme === "dark" ? "text-blue-400 bg-slate-700" : "text-white"
-                      }`}
-                    >
-                      <Moon className="w-4 h-4" />
-                      <span>Ciemny</span>
-                    </button>
-                    <button
-                      onClick={() => handleThemeChange("light")}
-                      className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-700 transition-colors duration-200 ${
-                        theme === "light" ? "text-blue-400 bg-slate-700" : "text-white"
-                      }`}
-                    >
-                      <Sun className="w-4 h-4" />
-                      <span>Jasny</span>
-                    </button>
-                    <button
-                      onClick={() => handleThemeChange("system")}
-                      className={`w-full flex items-center gap-3 px-4 py-2 text-sm hover:bg-slate-700 transition-colors duration-200 ${
-                        theme === "system" ? "text-blue-400 bg-slate-700" : "text-white"
-                      }`}
-                    >
-                      <Monitor className="w-4 h-4" />
-                      <span>System</span>
+                      <span>{t('language.english')}</span>
                     </button>
                   </div>
                 </div>

@@ -1,0 +1,318 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "send": "Send",
+    "save": "Save",
+    "back": "Back",
+    "viewMore": "View more",
+    "clickToView": "Click to view",
+    "articles": "articles",
+    "article": "Article"
+  },
+  "nav": {
+    "backToHome": "Back to home",
+    "backToProjects": "Back to projects",
+    "backToProject": "Back to project",
+    "palette": "Palette",
+    "theme": {
+      "dark": "Dark",
+      "light": "Light",
+      "system": "System"
+    },
+    "language": {
+      "polish": "Polski",
+      "english": "English"
+    }
+  },
+  "home": {
+    "welcome": "welcome",
+    "intro": "Hi, I'm Łukasz Bernatowicz, developer and systems engineer. Technology enthusiast focused on UX, animations and microinteractions. I create beautiful and functional interfaces, always looking for new challenges."
+  },
+  "about": {
+    "title": "About me",
+    "greeting": "Hi, I'm Łukasz, fullstack developer from Poland 🇵🇱",
+    "developer": "Developer",
+    "engineer": "Engineer",
+    "developerTools": "Main tools for developer",
+    "engineerTools": "Main tools for engineer",
+    "developerDescription": "Besides programming, I'm passionate about music, traveling and photography. My unique hobby is playing guitar and creating electronic music.",
+    "engineerDescription": "As a systems engineer, I focus on building scalable infrastructure and process automation. I'm passionate about DevOps and cloud architecture."
+  },
+  "portfolio": {
+    "title": "Portfolio & Projects",
+    "loadingProjects": "Loading projects...",
+    "loadingError": "Loading error",
+    "checkConnection": "Check connection",
+    "clickToViewAll": "Click to view all projects →"
+  },
+  "now": {
+    "title": "Now",
+    "whatIsThis": "what is this?",
+    "currentStatus": "Currently working as a freelancer"
+  },
+  "cv": {
+    "title": "CV",
+    "description": "Click the button below to request my CV",
+    "askButton": "Ask for CV",
+    "requestSent": "Request sent!",
+    "requestMessage": "Thank you for your interest! I'll get back to you soon.",
+    "modal": {
+      "title": "Request CV",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "namePlaceholder": "Enter your name",
+      "emailPlaceholder": "Enter your email",
+      "sendButton": "Send request",
+      "cancelButton": "Cancel",
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format"
+    }
+  },
+  "education": {
+    "title": "Education",
+    "degree": "Mechanical-Medical Engineering",
+    "university": "Gdańsk University of Technology",
+    "period": "2015 - 2020",
+    "specialization": "Specialization: Mechanical-Medical Engineering",
+    "courses": "Courses and certificates",
+    "platforms": "Various platforms",
+    "current": "Present",
+    "technologies": "React, Node.js, ROS2, LLM, Docker, YOLOv8, Inventor, SolidWorks, Nastran, AI_DEVS, CAD",
+    "clickToViewDetails": "Click to view details →",
+    "certificates": {
+      "title": "Certificates",
+      "subtitle": "My achievements and certifications",
+      "items": {
+        "aws": {
+          "title": "AWS Certified Solutions Architect",
+          "issuer": "Amazon Web Services",
+          "date": "2023",
+          "description": "Certificate confirming skills in designing scalable applications in AWS cloud"
+        },
+        "react": {
+          "title": "React Developer Certification",
+          "issuer": "Meta",
+          "date": "2023",
+          "description": "Certificate confirming advanced skills in React and JavaScript ecosystem"
+        },
+        "docker": {
+          "title": "Docker Certified Associate",
+          "issuer": "Docker Inc.",
+          "date": "2022",
+          "description": "Certificate confirming containerization skills and Docker application management"
+        },
+        "typescript": {
+          "title": "TypeScript Fundamentals",
+          "issuer": "Microsoft",
+          "date": "2022",
+          "description": "Certificate confirming TypeScript knowledge and advanced programming patterns"
+        }
+      }
+    }
+  },
+  "experience": {
+    "title": "Experience",
+    "myExperience": "My Experience",
+    "careerHistory": "My professional career history in IT industry",
+    "softwareEngineer": "Software Engineer",
+    "frontendDeveloper": "Frontend developer",
+    "current": "Present",
+    "clickToViewDetails": "Click to view details →",
+    "technologies": "Technologies",
+    "achievements": "Key achievements",
+    "interestedInCollaboration": "Interested in collaboration?",
+    "openToOpportunities": "I'm open to new opportunities and projects. Get in touch!",
+    "getInTouch": "Get in touch",
+    "types": {
+      "fullTime": "Full-time",
+      "partTime": "Part-time",
+      "contract": "Contract",
+      "freelance": "Freelance",
+      "other": "Other"
+    },
+    "jobs": {
+      "position1": {
+        "title": "Software Engineer",
+        "company": "Ocean-Tech",
+        "location": "Chwaszczyno, Poland",
+        "period": "2021 - Present",
+        "description": "Working on research projects in underwater robotics. Modernization of hyperbaric chambers. Creating pneumatic low and high pressure panels.",
+        "achievement1": "Work on underwater vehicle for collecting physicochemical samples helping locate corpses 'UTOPIEC'",
+        "achievement2": "Building diving vision system for two divers",
+        "achievement3": "Work on research project of 5-axis underwater manipulator",
+        "achievement4": "Modernization of military FALCON type ROV vehicles",
+        "achievement5": "Building pressure chamber for testing electrical equipment tightness",
+        "technologies": "ROS2, Python, C++, OpenCV, SolidWorks, Inventor, Electronics, Robotics"
+      },
+      "position2": {
+        "title": "Ship Engineer",
+        "company": "Nauta Shipyard",
+        "location": "Gdynia, Poland",
+        "period": "2015 - 2016",
+        "description": "Developing repair elements, transport brackets and modernization of decks on commercial ships and military vessels",
+        "achievement1": "Collaboration in large, multi-departmental team",
+        "achievement2": "Calculations of critical structural elements",
+        "achievement3": "Coordination of orders and construction processes",
+        "achievement4": "Designing repair elements",
+        "achievement5": "Ship deck modernization",
+        "technologies": "SolidWorks, AutoCAD, Inventor, Nastran, FEA, Mechanical Design"
+      },
+      "position3": {
+        "title": "Design Engineer",
+        "company": "Ocean-Tech",
+        "location": "Chwaszczyno, Poland",
+        "period": "2016 - 2021 | 2023 - Present (Part-time work)",
+        "description": "Working on research projects in underwater robotics. Modernization of hyperbaric chambers. Creating pneumatic low and high pressure panels.",
+        "achievement1": "Work on underwater vehicle for collecting physicochemical samples helping locate corpses 'UTOPIEC'",
+        "achievement2": "Building diving vision system for two divers",
+        "achievement3": "Work on research project of 5-axis underwater manipulator",
+        "achievement4": "Modernization of military FALCON type ROV vehicles",
+        "achievement5": "Building pressure chamber for testing electrical equipment tightness",
+        "technologies": "ROS2, Python, C++, OpenCV, SolidWorks, Inventor, Electronics, Robotics"
+      },
+      "position4": {
+        "title": "Frontend Developer",
+        "company": "Madmontain",
+        "location": "Remote",
+        "period": "2020 - 2021",
+        "description": "Working on maintenance and development of mobile application in React Native.",
+        "achievement1": "Fixed bugs in the application",
+        "achievement2": "Built advertising module in the application",
+        "achievement3": "Refactored application code",
+        "achievement4": "Implemented new features",
+        "achievement5": "Optimized application performance",
+        "technologies": "React Native, JavaScript, Redux, Firebase, Git"
+      },
+      "position5": {
+        "title": "Frontend Developer",
+        "company": "Lightsoft",
+        "location": "Remote",
+        "period": "2019 - Present",
+        "description": "Working on maintenance and development of mobile application in React Native.",
+        "achievement1": "Fixed bugs in the application",
+        "achievement2": "Built advertising module in the application",
+        "achievement3": "Refactored application code",
+        "achievement4": "Implemented unit tests",
+        "achievement5": "Optimized application performance",
+        "technologies": "React Native, JavaScript, Redux, Firebase, Git"
+      },
+      "position6": {
+        "title": "Frontend Developer",
+        "company": "Codema",
+        "location": "Remote",
+        "period": "2021 - 2022",
+        "description": "Working on maintenance and development of mobile application in React Native.",
+        "achievement1": "Fixed bugs in the application",
+        "achievement2": "Built advertising module in the application",
+        "achievement3": "Refactored application code",
+        "achievement4": "Migrated from JavaScript to TypeScript",
+        "achievement5": "Implemented modern programming patterns",
+        "technologies": "React Native, TypeScript, Redux, Firebase, Git, Jest, ESLint"
+      },
+      "position7": {
+        "title": "Frontend Developer",
+        "company": "Napoleon Cat",
+        "location": "Remote",
+        "period": "2022 - current",
+        "description": "Working on maintenance and development of mobile application in React Native.",
+        "achievement1": "Fixed bugs in the application",
+        "achievement2": "Built advertising module in the application",
+        "achievement3": "Refactored application code",
+        "achievement4": "Implemented Redux Toolkit",
+        "achievement5": "Configured development tools (ESLint, Prettier)",
+        "technologies": "React Native, TypeScript, Redux Toolkit, Firebase, Git, Jest, ESLint, Prettier"
+      }
+    }
+  },
+  "contact": {
+    "title": "Let's start working together!",
+    "location": "Warsaw, Poland 🇵🇱"
+  },
+  "quotes": {
+    "quote1": {
+      "text": "Anything one man can imagine, other men can make real.",
+      "author": "Jules Verne"
+    },
+    "quote2": {
+      "text": "Programming is the art of solving problems with code.",
+      "author": "Anonymous programmer"
+    },
+    "quote3": {
+      "text": "The best way to learn programming is to program.",
+      "author": "Kent Beck"
+    },
+    "quote4": {
+      "text": "Code is poetry that makes sense to a computer.",
+      "author": "Paul Graham"
+    },
+    "goToQuote": "Go to quote"
+  },
+  "timezone": {
+    "title": "Timezone",
+    "currentTime": "Thursday, October 10, 2024 at 8:16:30",
+    "location": "Warsaw, Poland 🇵🇱"
+  },
+  "projects": {
+    "title": "Projects",
+    "myProjects": "My Projects",
+    "subtitle": "Collection of my most important programming projects",
+    "loading": "Loading projects from GitHub...",
+    "loadingProject": "Loading project...",
+    "loadingArticle": "Loading article...",
+    "loadingError": "Error loading projects:",
+    "checkGitHub": "Check GitHub API configuration",
+    "notFound": "Project not found",
+    "searchedProject": "Searched project:",
+    "availableProjects": "Available projects:",
+    "errorLoadingArticle": "Error while loading article",
+    "status": {
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "planned": "Planned",
+      "unknown": "Unknown"
+    },
+    "buttons": {
+      "github": "GitHub",
+      "liveDemo": "Live Demo"
+    },
+    "changelog": {
+      "title": "Changelog",
+      "subtitle": "Project change history",
+      "readArticle": "Read article"
+    },
+    "article": {
+      "changelogFile": "CHANGELOG.md",
+      "articleNumber": "Article #",
+      "tableOfContents": "Table of Contents",
+      "technologiesUsed": "Technologies used",
+      "publicationDate": "Publication date:",
+      "version": "Version:",
+      "backToProject": "Back to project"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "addComment": "Add comment...",
+    "writeReply": "Write a reply...",
+    "send": "Send",
+    "cancel": "Cancel",
+    "reply": "Reply",
+    "noComments": "No comments. Be the first!",
+    "user": "User"
+  },
+  "date": {
+    "format": {
+      "long": "en-US",
+      "options": {
+        "year": "numeric",
+        "month": "long",
+        "day": "numeric"
+      }
+    }
+  }
+}
+

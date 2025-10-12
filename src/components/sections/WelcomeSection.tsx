@@ -1,28 +1,42 @@
-import { Hand, Github, Linkedin, Mail } from "lucide-react";
+"use client";
+
+import { Github, Linkedin } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from 'next-intl';
 
 export default function WelcomeSection() {
+  const t = useTranslations('home');
+  
+  const handleLinkedInClick = () => {
+    window.open('https://www.linkedin.com/in/%C5%82ukasz-bernatowicz/', '_blank');
+  };
+
+  const handleGitHubClick = () => {
+    window.open('https://github.com/LBernatowicz', '_blank');
+  };
+  
   return (
     <div>
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
           <div className="flex-1">
             <h1 className="text-4xl lg:text-5xl font-bold mb-3 text-white">
-              welcome
+              {t('welcome')}
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed mb-4 break-words">
-              Cześć, jestem Łukasz Bernatowicz, programista i inżynier systemów. 
-              Pasjonat technologii z naciskiem na UX, animacje i mikrointerakcje. 
-              Tworzę piękne i funkcjonalne interfejsy, zawsze szukam nowych wyzwań.
+              {t('intro')}
             </p>
             <div className="flex gap-4">
-              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer">
-                <Hand className="w-6 h-6" />
-              </button>
-              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer">
+              <button 
+                onClick={handleLinkedInClick}
+                className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+              >
                 <Linkedin className="w-6 h-6" />
               </button>
-              <button className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer">
-                <Mail className="w-6 h-6" />
+              <button 
+                onClick={handleGitHubClick}
+                className="w-12 h-12 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <Github className="w-6 h-6" />
               </button>
             </div>
           </div>

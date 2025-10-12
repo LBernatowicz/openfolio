@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenFolio - Portfolio & Blog
 
-## Getting Started
+Modern portfolio website with blog functionality, built with Next.js, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## 🚀 Quick Start
 
+### Prerequisites
+- Docker & Docker Compose
+- Git
+
+### Local Development
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone repository
+git clone https://github.com/your-username/openfolio.git
+cd openfolio
+
+# Install dependencies
+bun install
+
+# Start development server
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Production Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Option 1: Docker Compose (Recommended)
+```bash
+# Copy environment variables
+cp env.example .env
+# Edit .env with your values
+nano .env
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Deploy
+chmod +x deploy.sh
+./deploy.sh
+```
 
-## Learn More
+#### Option 2: Manual Docker Compose
+```bash
+# Copy environment variables
+cp env.example .env
+# Edit .env with your values
 
-To learn more about Next.js, take a look at the following resources:
+# Build and start
+docker-compose up -d --build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### Option 3: Portainer
+1. Upload `docker-compose.yml` to Portainer
+2. Create stack with environment variables
+3. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔧 Configuration
 
-## Deploy on Vercel
+### Required Environment Variables
+- `NEXTAUTH_URL` - Your domain URL
+- `NEXTAUTH_SECRET` - Random secret key
+- `GITHUB_CLIENT_ID` - GitHub OAuth Client ID
+- `GITHUB_CLIENT_SECRET` - GitHub OAuth Client Secret
+- `GITHUB_TOKEN` - GitHub API Token
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### GitHub OAuth Setup
+1. Go to GitHub Settings > Developer settings > OAuth Apps
+2. Create new OAuth App
+3. Set Authorization callback URL: `https://your-domain.com/api/auth/callback/github`
+4. Copy Client ID and Client Secret to `.env`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🤖 CI/CD Pipeline
+
+The repository includes GitHub Actions workflow for automatic deployment:
+
+1. Push to `main` branch triggers deployment
+2. SSH to production server
+3. Pull latest code
+4. Rebuild and restart containers
+
+### Required GitHub Secrets
+- `PROD_HOST` - Production server IP/domain
+- `PROD_USERNAME` - SSH username
+- `PROD_SSH_KEY` - SSH private key
+
+## 📁 Project Structure
+
+```
+src/
+├── app/                 # Next.js app router
+├── components/          # React components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+├── messages/           # i18n translations
+└── types/              # TypeScript types
+```
+
+## 🌐 Features
+
+- 🌍 Multi-language support (PL/EN)
+- 📱 Responsive design
+- 🔐 GitHub OAuth authentication
+- 💬 Comment system
+- 📝 Blog functionality
+- 🎨 Modern UI with Tailwind CSS
+- 🚀 Docker containerization
+- 🔄 CI/CD pipeline
+
+## 📄 License
+
+MIT License - see LICENSE file for details

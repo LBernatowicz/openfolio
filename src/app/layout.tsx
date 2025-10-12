@@ -1,32 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
-  title: "OpenFolio - Twoje Portfolio",
-  description: "Nowoczesne portfolio do prezentacji Twoich projektów i umiejętności",
+  title: "OpenFolio",
+  description: "Portfolio and Blog",
 };
 
+// Root layout - internationalization is handled in [locale]/layout.tsx
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="pl">
+      <body>
         {children}
       </body>
     </html>

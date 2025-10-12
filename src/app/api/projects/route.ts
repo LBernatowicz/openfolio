@@ -12,7 +12,7 @@ export async function GET() {
     console.log('NEXT_PUBLIC_GITHUB_REPO:', process.env.NEXT_PUBLIC_GITHUB_REPO);
     
     // TEMPORARY: Force GitHub to be available for testing
-    const forceGitHub = true; // CHANGED: Force GitHub for testing
+    const forceGitHub = true; // CHANGED: Use real GitHub projects
     
     if (!forceGitHub) {
       // Check if GitHub is available (has token)
@@ -62,15 +62,10 @@ export async function GET() {
     
     // Add sub-issues (articles) and comments to their respective projects
     projects.forEach(project => {
-      // Find the original project issue to get its number
-      const originalProjectIssue = projectIssues.find(issue => {
-        const projectSlug = issue.title
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .trim();
-        return projectSlug === project.id;
-      });
+      // Find the original project issue by number (since project.id is now the issue number)
+      const originalProjectIssue = projectIssues.find(issue => 
+        issue.number.toString() === project.id
+      );
       
       if (originalProjectIssue) {
         const projectNumber = originalProjectIssue.number;
@@ -78,9 +73,38 @@ export async function GET() {
         
         // Add sub-issues as articles
         if (articlesByProject[projectNumber]) {
-          const projectArticles = articlesByProject[projectNumber].map(convertGitHubIssueToArticle);
+          const projectArticles = articlesByProject[projectNumber]
+            .map(convertGitHubIssueToArticle)
+            .sort((a, b) => {
+              // Sort by version (highest first)
+              const versionA = a.version || '0.0.0';
+              const versionB = b.version || '0.0.0';
+              
+              // Parse version strings (e.g., "2.0.0" -> [2, 0, 0])
+              const parseVersion = (version: string) => {
+                return version.split('.').map(num => parseInt(num) || 0);
+              };
+              
+              const versionPartsA = parseVersion(versionA);
+              const versionPartsB = parseVersion(versionB);
+              
+              // Compare major, minor, patch versions
+              for (let i = 0; i < Math.max(versionPartsA.length, versionPartsB.length); i++) {
+                const partA = versionPartsA[i] || 0;
+                const partB = versionPartsB[i] || 0;
+                
+                if (partA !== partB) {
+                  return partB - partA; // Descending order (highest first)
+                }
+              }
+              
+              // If versions are equal, sort by date (newest first)
+              const dateA = new Date(a.date).getTime();
+              const dateB = new Date(b.date).getTime();
+              return dateB - dateA;
+            });
           console.log(`✅ Found ${projectArticles.length} sub-issues for project ${project.id}`);
-          console.log(`📝 Sub-issue IDs:`, projectArticles.map(a => a.id));
+          console.log(`📝 Sub-issue IDs (sorted by version):`, projectArticles.map(a => ({ id: a.id, version: a.version, date: a.date })));
           project.entries = projectArticles;
         } else {
           console.log(`❌ No sub-issues found for project ${project.id}`);
@@ -115,8 +139,8 @@ export async function GET() {
     return response;
   } catch (error) {
     console.error('❌ Error fetching projects:', error);
-    console.error('Error details:', error.message);
-    console.error('Error stack:', error.stack);
+    console.error('Error details:', error instanceof Error ? error.message : String(error));
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     console.log('Falling back to mock data due to error');
     const mockProjects = getFallbackProjects();
     const response = NextResponse.json(mockProjects);

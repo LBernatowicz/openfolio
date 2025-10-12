@@ -1,7 +1,8 @@
 "use client";
 
 import { ArrowLeft, Briefcase, Calendar, MapPin, ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface Experience {
   id: string;
@@ -16,59 +17,123 @@ interface Experience {
   current: boolean;
 }
 
-const experiences: Experience[] = [
-  {
-    id: '1',
-    title: 'Software Engineer',
-    company: 'Straico',
-    location: 'Remote',
-    period: '2021 - Obecnie',
-    description: 'Rozwój i utrzymanie aplikacji webowych używając React, Node.js i TypeScript. Praca w zespole Agile z naciskiem na jakość kodu i testy jednostkowe.',
-    technologies: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'AWS'],
-    achievements: [
-      'Zwiększenie wydajności aplikacji o 40% poprzez optymalizację zapytań do bazy danych',
-      'Wprowadzenie nowego systemu testów automatycznych, redukując błędy produkcyjne o 60%',
-      'Mentoring junior developerów i prowadzenie code review'
-    ],
-    type: 'full-time',
-    current: true
-  },
-  {
-    id: '2',
-    title: 'Software Engineer',
-    company: 'Spot2',
-    location: 'Warsaw, Poland',
-    period: '2021 - Obecnie',
-    description: 'Tworzenie rozwiązań e-commerce i systemów zarządzania treścią. Praca z mikroserwisami i integracjami z zewnętrznymi API.',
-    technologies: ['Vue.js', 'Laravel', 'MySQL', 'Redis', 'Kubernetes', 'GitLab CI/CD'],
-    achievements: [
-      'Projektowanie i implementacja nowego systemu płatności',
-      'Migracja monolitycznej aplikacji na architekturę mikroserwisów',
-      'Wprowadzenie nowych standardów bezpieczeństwa'
-    ],
-    type: 'full-time',
-    current: true
-  },
-  {
-    id: '3',
-    title: 'Frontend Developer',
-    company: 'Imaginamos',
-    location: 'Barcelona, Spain',
-    period: '2021 - 2021',
-    description: 'Tworzenie interfejsów użytkownika dla aplikacji mobilnych i webowych. Współpraca z designerami i backend developerami.',
-    technologies: ['React Native', 'JavaScript', 'Redux', 'Figma', 'REST API'],
-    achievements: [
-      'Opracowanie komponentów UI używanych w 5+ aplikacjach',
-      'Implementacja responsywnych layoutów dla różnych urządzeń',
-      'Optymalizacja wydajności aplikacji mobilnych'
-    ],
-    type: 'contract',
-    current: false
-  }
-];
-
 export default function ExperiencePage() {
+  const t = useTranslations('experience');
+  const tNav = useTranslations('nav');
   const router = useRouter();
+
+  // Funkcja pomocnicza do pobierania osiągnięć - bezpieczne podejście z limitem
+  const getAchievements = (positionKey: string): string[] => {
+    const achievements: string[] = [];
+    const maxAchievements = 5; // Maksymalna liczba achievement do sprawdzenia
+    
+    for (let index = 1; index <= maxAchievements; index++) {
+      const key = `jobs.${positionKey}.achievement${index}`;
+      const achievement = t(key);
+      
+      // Sprawdź czy tłumaczenie istnieje - jeśli zwrócona wartość to klucz, oznacza to że tłumaczenie nie istnieje
+      if (achievement === key) {
+        break;
+      }
+      
+      // Jeśli osiągnięcie istnieje i nie jest puste, dodaj je
+      if (achievement && achievement.trim() !== '') {
+        achievements.push(achievement);
+      } else {
+        break;
+      }
+    }
+    
+    return achievements;
+  };
+
+  // Pobierz dane z tłumaczeń - odwrócona kolejność (najnowsze na górze)
+  const experiences: Experience[] = [
+    {
+      id: '7',
+      title: t('jobs.position7.title'),
+      company: t('jobs.position7.company'),
+      location: t('jobs.position7.location'),
+      period: t('jobs.position7.period'),
+      description: t('jobs.position7.description'),
+      technologies: t('jobs.position7.technologies').split(', '),
+      achievements: getAchievements('position7'),
+      type: 'contract',
+      current: true
+    },
+    {
+      id: '6',
+      title: t('jobs.position6.title'),
+      company: t('jobs.position6.company'),
+      location: t('jobs.position6.location'),
+      period: t('jobs.position6.period'),
+      description: t('jobs.position6.description'),
+      technologies: t('jobs.position6.technologies').split(', '),
+      achievements: getAchievements('position6'),
+      type: 'contract',
+      current: false
+    },
+    {
+      id: '5',
+      title: t('jobs.position5.title'),
+      company: t('jobs.position5.company'),
+      location: t('jobs.position5.location'),
+      period: t('jobs.position5.period'),
+      description: t('jobs.position5.description'),
+      technologies: t('jobs.position5.technologies').split(', '),
+      achievements: getAchievements('position5'),
+      type: 'contract',
+      current: true
+    },
+    {
+      id: '4',
+      title: t('jobs.position4.title'),
+      company: t('jobs.position4.company'),
+      location: t('jobs.position4.location'),
+      period: t('jobs.position4.period'),
+      description: t('jobs.position4.description'),
+      technologies: t('jobs.position4.technologies').split(', '),
+      achievements: getAchievements('position4'),
+      type: 'contract',
+      current: false
+    },
+    {
+      id: '3',
+      title: t('jobs.position3.title'),
+      company: t('jobs.position3.company'),
+      location: t('jobs.position3.location'),
+      period: t('jobs.position3.period'),
+      description: t('jobs.position3.description'),
+      technologies: t('jobs.position3.technologies').split(', '),
+      achievements: getAchievements('position3'),
+      type: 'full-time',
+      current: true
+    },
+    {
+      id: '2',
+      title: t('jobs.position2.title'),
+      company: t('jobs.position2.company'),
+      location: t('jobs.position2.location'),
+      period: t('jobs.position2.period'),
+      description: t('jobs.position2.description'),
+      technologies: t('jobs.position2.technologies').split(', '),
+      achievements: getAchievements('position2'),
+      type: 'full-time',
+      current: false
+    },
+    {
+      id: '1',
+      title: t('jobs.position1.title'),
+      company: t('jobs.position1.company'),
+      location: t('jobs.position1.location'),
+      period: t('jobs.position1.period'),
+      description: t('jobs.position1.description'),
+      technologies: t('jobs.position1.technologies').split(', '),
+      achievements: getAchievements('position1'),
+      type: 'contract',
+      current: false
+    }
+  ];
 
   const getTypeColor = (type: Experience['type']) => {
     switch (type) {
@@ -88,15 +153,15 @@ export default function ExperiencePage() {
   const getTypeText = (type: Experience['type']) => {
     switch (type) {
       case 'full-time':
-        return 'Pełny etat';
+        return t('types.fullTime');
       case 'part-time':
-        return 'Część etatu';
+        return t('types.partTime');
       case 'contract':
-        return 'Kontrakt';
+        return t('types.contract');
       case 'freelance':
-        return 'Freelance';
+        return t('types.freelance');
       default:
-        return 'Inne';
+        return t('types.other');
     }
   };
 
@@ -111,12 +176,12 @@ export default function ExperiencePage() {
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors duration-200 group"
             >
               <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-200" />
-              <span className="font-semibold text-lg">Powrót do strony głównej</span>
+              <span className="font-semibold text-lg">{tNav('backToHome')}</span>
             </button>
             
             <div className="flex items-center gap-2">
               <Briefcase className="w-6 h-6 text-blue-500" />
-              <h1 className="text-xl font-bold text-white">Doświadczenie</h1>
+              <h1 className="text-xl font-bold text-white">{t('title')}</h1>
             </div>
           </div>
         </div>
@@ -125,8 +190,8 @@ export default function ExperiencePage() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <div className="mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Moje Doświadczenie</h2>
-          <p className="text-gray-400 text-lg">Historia mojej kariery zawodowej w branży IT</p>
+          <h2 className="text-4xl font-bold text-white mb-4">{t('myExperience')}</h2>
+          <p className="text-gray-400 text-lg">{t('careerHistory')}</p>
         </div>
 
         {/* Timeline */}
@@ -156,7 +221,7 @@ export default function ExperiencePage() {
                       <span>{experience.company}</span>
                       {experience.current && (
                         <span className="px-2 py-1 bg-green-400/10 text-green-400 text-xs rounded-full border border-green-400/20">
-                          Obecnie
+                          {t('current')}
                         </span>
                       )}
                     </div>
@@ -184,7 +249,7 @@ export default function ExperiencePage() {
 
                 {/* Technologies */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-400 mb-2">Technologie:</h4>
+                  <h4 className="text-sm font-semibold text-gray-400 mb-2">{t('technologies')}:</h4>
                   <div className="flex flex-wrap gap-2">
                     {experience.technologies.map((tech) => (
                       <span
@@ -199,7 +264,7 @@ export default function ExperiencePage() {
 
                 {/* Achievements */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-400 mb-2">Kluczowe osiągnięcia:</h4>
+                  <h4 className="text-sm font-semibold text-gray-400 mb-2">{t('achievements')}:</h4>
                   <ul className="space-y-1">
                     {experience.achievements.map((achievement, idx) => (
                       <li key={idx} className="text-sm text-gray-300 flex items-start gap-2">
@@ -212,23 +277,6 @@ export default function ExperiencePage() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Call to Action */}
-        <div className="mt-12 text-center">
-          <div className="p-8 rounded-2xl bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20">
-            <h3 className="text-2xl font-bold text-white mb-4">Interesuje Cię współpraca?</h3>
-            <p className="text-gray-300 mb-6">
-              Jestem otwarty na nowe możliwości i projekty. Skontaktuj się ze mną!
-            </p>
-            <button
-              onClick={() => router.push('/#contact')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors duration-200"
-            >
-              <ExternalLink className="w-4 h-4" />
-              Skontaktuj się
-            </button>
-          </div>
         </div>
       </div>
     </div>

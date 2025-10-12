@@ -1,0 +1,96 @@
+# Łukasz Bernatowicz - CV
+
+## Dane kontaktowe
+**Email:** lukasz@bernatowicz.com.pl  
+**Portfolio:** https://bernatowicz.com.pl  
+**GitHub:** github.com/lukaszbernatowicz  
+**LinkedIn:** linkedin.com/in/lukaszbernatowicz  
+
+## Doświadczenie zawodowe
+
+### Software Engineer - Straico (2021 - Obecnie)
+**Lokalizacja:** Remote  
+**Technologie:** React, TypeScript, Node.js, PostgreSQL, Docker, AWS  
+
+**Kluczowe osiągnięcia:**
+• Zwiększenie wydajności aplikacji o 40% poprzez optymalizację zapytań do bazy danych
+• Wprowadzenie nowego systemu testów automatycznych, redukując błędy produkcyjne o 60%
+• Mentoring junior developerów i prowadzenie code review
+
+### Software Engineer - Spot2 (2021 - Obecnie)
+**Lokalizacja:** Warszawa, Polska  
+**Technologie:** Vue.js, Laravel, MySQL, Redis, Kubernetes, GitLab CI/CD  
+
+**Kluczowe osiągnięcia:**
+• Projektowanie i implementacja nowego systemu płatności
+• Migracja monolitycznej aplikacji na architekturę mikroserwisów
+• Wprowadzenie nowych standardów bezpieczeństwa
+
+### Frontend Developer - Imaginamos (2021)
+**Lokalizacja:** Barcelona, Hiszpania  
+**Technologie:** React Native, JavaScript, Redux, Figma, REST API  
+
+**Kluczowe osiągnięcia:**
+• Opracowanie komponentów UI używanych w 5+ aplikacjach
+• Implementacja responsywnych layoutów dla różnych urządzeń
+• Optymalizacja wydajności aplikacji mobilnych
+
+## Edukacja
+
+### Inżynieria mechaniczno-medyczna
+**Uczelnia:** Politechnika Gdańska  
+**Okres:** 2015 - 2020  
+**Specjalizacja:** Biomechanika i inżynieria medyczna  
+
+## Umiejętności techniczne
+
+**Frontend Development:**
+• React, TypeScript, Vue.js, JavaScript, HTML5, CSS3
+• React Native, Redux, Zustand
+• Tailwind CSS, Styled Components
+
+**Backend Development:**
+• Node.js, Express.js, Laravel
+• PostgreSQL, MySQL, Redis
+• REST API, GraphQL
+
+**DevOps & Narzędzia:**
+• Docker, Kubernetes, AWS
+• GitLab CI/CD, GitHub Actions
+• Git, Figma, Postman
+
+**Metodologie:**
+• Agile, Scrum
+• Test-Driven Development (TDD)
+• Code Review, Pair Programming
+
+## Projekty
+
+### OpenFolio
+**Opis:** Portfolio z integracją GitHub Issues do zarządzania projektami i artykułami  
+**Technologie:** Next.js, TypeScript, Tailwind CSS, GitHub API  
+**Link:** https://github.com/lukaszbernatowicz/openfolio  
+
+### E-commerce Platform
+**Opis:** Platforma sprzedażowa z architekturą mikroserwisów  
+**Technologie:** Vue.js, Laravel, MySQL, Redis, Docker  
+
+### Mobile Application
+**Opis:** Aplikacja mobilna do zarządzania projektami  
+**Technologie:** React Native, Redux, REST API  
+
+## Języki
+
+• **Polski** - język ojczysty
+• **Angielski** - zaawansowany (C1)
+• **Hiszpański** - podstawowy (A2)
+
+## Certyfikaty
+
+• AWS Certified Developer Associate (planowane)
+• Google Cloud Professional Developer (planowane)
+
+---
+*CV wygenerowane automatycznie z portfolio*  
+*Data aktualizacji: Styczeń 2024*  
+*Kontakt: lukasz@bernatowicz.com.pl*

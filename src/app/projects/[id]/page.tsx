@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import CommentSection from "../../../components/ui/CommentSection";
 import MarkdownRenderer from "../../../components/ui/MarkdownRenderer";
 import { useState, useEffect, use } from "react";
+import React from "react";
 
 interface ProjectDetailPageProps {
   params: Promise<{
