@@ -102,8 +102,8 @@ export async function GET(
         // For custom users, check if it's anonymous
         if (userInfo.isAnonymous) {
           console.log(`👻 Anonymous user, using placeholder`);
-          // Use null for anonymous users to show placeholder icon
-          avatarUrl = null;
+          // Use empty string for anonymous users to show placeholder icon (fix type error)
+          avatarUrl = "";
         } else {
           console.log(`🔍 Authenticated user, trying GitHub API...`);
           // Try to get avatar from GitHub API for authenticated users
