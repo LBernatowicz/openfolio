@@ -72,6 +72,17 @@
       "emailInvalid": "Nieprawidłowy format email"
     }
   },
+  "courses": {
+    "title": "Kursy i certyfikaty",
+    "recent": "Ostatnie kursy",
+    "platforms": "Różne platformy",
+    "period": "2020 - Obecnie",
+    "topics": "React, Node.js, ROS2, LLM, Docker, YOLOv8, AI/ML, TypeScript, Next.js",
+    "certificates": "Certyfikaty",
+    "count": "4+ certyfikaty",
+    "certificatesDescription": "AWS, React, Docker, TypeScript i inne",
+    "clickToViewDetails": "Kliknij, aby zobaczyć szczegóły →"
+  },
   "education": {
     "title": "Edukacja",
     "degree": "Inżynieria mechaniczno-medyczna",

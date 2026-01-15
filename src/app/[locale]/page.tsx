@@ -4,6 +4,7 @@ import CVSection from "@/components/sections/CVSection";
 import PortfolioSection from "@/components/sections/PortfolioSection";
 import ExperienceSection from "@/components/sections/ExperienceSection";
 import StudySection from "@/components/sections/StudySection";
+import CoursesSection from "@/components/sections/CoursesSection";
 import QuoteTimezoneGroup from "@/components/sections/QuoteTimezoneGroup";
 import ContactSection from "@/components/sections/ContactSection";
 import NowSection from "@/components/sections/NowSection";
@@ -31,6 +32,7 @@ export default function Home() {
           
           {/* Trzeci rząd */}
           <StudySection />
+          <CoursesSection />
           <QuoteTimezoneGroup />
           <CVSection />
           
