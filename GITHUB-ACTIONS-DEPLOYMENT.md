@@ -2,6 +2,88 @@
 
 Ten dokument opisuje plan automatycznego deploymentu aplikacji OpenFolio na Raspberry Pi przy użyciu GitHub Actions.
 
+## ⚡ Quick Start - Deployment na Produkcję (Docker)
+
+Jeśli chcesz szybko wdrożyć aplikację na produkcję, wykonaj te kroki:
+
+### 1. Przygotowanie Raspberry Pi (jednorazowo)
+
+```bash
+# Zaloguj się na Raspberry Pi
+ssh pi@192.168.1.100
+
+# Zainstaluj Docker (jeśli nie masz)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+
+# Zainstaluj Docker Compose
+sudo apt-get install docker-compose-plugin -y
+
+# Wyloguj się i zaloguj ponownie, żeby zastosować zmiany grup
+exit
+```
+
+### 2. Konfiguracja klucza SSH (jednorazowo)
+
+```bash
+# Na swoim komputerze lokalnym
+# Wygeneruj klucz SSH
+ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_raspberry_pi
+# Naciśnij Enter dwa razy (bez hasła)
+
+# Skopiuj klucz publiczny na Raspberry Pi
+ssh-copy-id -i ~/.ssh/github_actions_raspberry_pi.pub pi@192.168.1.100
+
+# Skopiuj CAŁY klucz prywatny (będzie potrzebny w GitHub)
+cat ~/.ssh/github_actions_raspberry_pi
+```
+
+### 3. Konfiguracja GitHub Secrets
+
+1. Przejdź do: `https://github.com/TWOJE_REPO/settings/secrets/actions`
+2. Dodaj następujące secrets:
+
+| Secret Name | Wartość |
+|------------|---------|
+| `RASPBERRY_PI_HOST` | IP Raspberry Pi (np. `192.168.1.100`) |
+| `RASPBERRY_PI_USER` | Użytkownik SSH (np. `pi`) |
+| `RASPBERRY_PI_SSH_KEY` | **CAŁY** klucz prywatny (z `-----BEGIN` do `-----END`) |
+| `RASPBERRY_PI_PORT` | Port SSH (opcjonalnie, domyślnie `22`) |
+
+### 4. Uruchomienie deploymentu
+
+**Opcja A: Automatyczny deployment**
+```bash
+# Po prostu zrób push do main/master
+git push origin main
+```
+
+**Opcja B: Ręczne uruchomienie**
+1. Przejdź do: `https://github.com/TWOJE_REPO/actions`
+2. Wybierz workflow: **"Deploy to Raspberry Pi (Docker)"**
+3. Kliknij **"Run workflow"**
+4. Wybierz branch (np. `main`)
+5. Kliknij **"Run workflow"**
+
+### 5. Sprawdzenie deploymentu
+
+```bash
+# Na Raspberry Pi
+cd ~/openfolio
+docker-compose ps
+docker-compose logs -f openfolio
+
+# Sprawdź czy aplikacja działa
+curl http://localhost:80
+```
+
+**Gotowe!** Aplikacja powinna być dostępna pod adresem: `http://IP_RASPBERRY_PI:80`
+
+---
+
+## 📋 Szczegółowa Dokumentacja
+
 ## 📋 Wymagania
 
 ### Na Raspberry Pi:
@@ -31,21 +113,161 @@ Aby GitHub Actions mógł połączyć się z Raspberry Pi, musisz skonfigurować
 | `RASPBERRY_PI_SSH_KEY` | Prywatny klucz SSH (cały klucz) | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
 | `RASPBERRY_PI_PORT` | Port SSH (opcjonalnie, domyślnie 22) | `22` |
 
-### Jak wygenerować klucz SSH:
+### Jak wygenerować i skonfigurować klucz SSH:
+
+#### Opcja A: Użyj istniejącego klucza SSH (np. z OMV)
+
+Jeśli masz już klucz SSH skonfigurowany w OMV lub na Raspberry Pi:
+
+```bash
+# 1. Znajdź klucz PRYWATNY na swoim komputerze lub w OMV
+# Zwykle znajduje się w:
+# - ~/.ssh/id_rsa (RSA) - klucz prywatny
+# - ~/.ssh/id_rsa.pub (RSA) - klucz publiczny
+# - ~/.ssh/id_ed25519 (Ed25519) - klucz prywatny
+# - ~/.ssh/id_ed25519.pub (Ed25519) - klucz publiczny
+
+# 2. Sprawdź czy masz klucz PRYWATNY (nie publiczny!)
+# Klucz prywatny zaczyna się od:
+# - -----BEGIN OPENSSH PRIVATE KEY----- (nowsze)
+# - -----BEGIN RSA PRIVATE KEY----- (starsze)
+head -1 ~/.ssh/id_rsa  # sprawdź pierwsze linie
+
+# 3. Sprawdź czy klucz publiczny jest już w authorized_keys na Raspberry Pi
+ssh pi@192.168.1.100 "cat ~/.ssh/authorized_keys"
+
+# 4. Jeśli klucz publiczny jest już w authorized_keys, możesz użyć klucza prywatnego
+# Skopiuj CAŁY klucz prywatny (nie .pub!):
+cat ~/.ssh/id_rsa  # lub id_ed25519, id_ecdsa (BEZ .pub na końcu!)
+
+# 5. Wklej CAŁĄ zawartość do GitHub Secret: RASPBERRY_PI_SSH_KEY
+```
+
+**⚠️ Ważne:**
+- **Użyj klucza PRYWATNEGO** (nie publicznego!)
+  - Klucz prywatny: `~/.ssh/id_rsa` (bez `.pub`)
+  - Klucz publiczny: `~/.ssh/id_rsa.pub` (z `.pub`) - **NIE UŻYWAJ TEGO!**
+- Klucz publiczny musi być w `~/.ssh/authorized_keys` na Raspberry Pi
+- Jeśli klucz ma hasło, musisz go wygenerować bez hasła lub użyć nowego klucza
+- Jeśli masz tylko klucz publiczny (`-----BEGIN SSH2 PUBLIC KEY-----`), musisz znaleźć odpowiadający mu klucz prywatny
+
+#### Opcja B: Wygeneruj nowy klucz SSH
 
 ```bash
 # Na swoim komputerze lokalnym
 ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_raspberry_pi
 
-# Skopiuj zawartość pliku prywatnego (będzie potrzebny w GitHub Secrets)
-cat ~/.ssh/github_actions_raspberry_pi
+# NIE ustawiaj hasła (naciśnij Enter dwa razy)
+# To wygeneruje dwa pliki:
+# - ~/.ssh/github_actions_raspberry_pi (klucz prywatny - DO GITHUB SECRETS)
+# - ~/.ssh/github_actions_raspberry_pi.pub (klucz publiczny - NA RASPBERRY PI)
+```
 
-# Skopiuj klucz publiczny na Raspberry Pi
+#### Krok 2: Skopiuj klucz publiczny na Raspberry Pi (tylko dla nowego klucza)
+
+Jeśli używasz istniejącego klucza i jest już w `authorized_keys`, możesz pominąć ten krok.
+
+```bash
+# Automatycznie (jeśli masz już dostęp SSH):
 ssh-copy-id -i ~/.ssh/github_actions_raspberry_pi.pub pi@192.168.1.100
 
 # Lub ręcznie:
-cat ~/.ssh/github_actions_raspberry_pi.pub | ssh pi@192.168.1.100 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+cat ~/.ssh/github_actions_raspberry_pi.pub | ssh pi@192.168.1.100 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
+
+#### Krok 3: Skopiuj klucz prywatny do GitHub Secrets
+
+```bash
+# Wyświetl zawartość klucza prywatnego (CAŁY KLUCZ!)
+cat ~/.ssh/github_actions_raspberry_pi
+```
+
+**WAŻNE:** Skopiuj CAŁĄ zawartość, włącznie z:
+- `-----BEGIN OPENSSH PRIVATE KEY-----`
+- Wszystkie linie klucza
+- `-----END OPENSSH PRIVATE KEY-----`
+
+#### Krok 4: Dodaj do GitHub Secrets
+
+1. Przejdź do: `https://github.com/TWOJE_REPO/settings/secrets/actions`
+2. Kliknij **"New repository secret"**
+3. **Name:** `RASPBERRY_PI_SSH_KEY`
+4. **Secret:** Wklej CAŁĄ zawartość klucza prywatnego (włącznie z `-----BEGIN` i `-----END`)
+5. Kliknij **"Add secret"**
+
+#### Krok 5: Zweryfikuj połączenie
+
+```bash
+# Przetestuj połączenie lokalnie z kluczem prywatnym
+ssh -i ~/.ssh/TWOJ_KLUCZ_PRYWATNY pi@192.168.1.100
+
+# Jeśli działa bez podawania hasła, klucz jest poprawnie skonfigurowany
+# Możesz teraz przetestować deployment w GitHub Actions
+```
+
+**✅ Sprawdzenie przed dodaniem do GitHub Secrets:**
+
+1. **Upewnij się, że używasz klucza PRYWATNEGO:**
+   ```bash
+   # Klucz prywatny zaczyna się od:
+   # -----BEGIN OPENSSH PRIVATE KEY----- (nowsze klucze)
+   # lub
+   # -----BEGIN RSA PRIVATE KEY----- (starsze klucze)
+   
+   head -1 ~/.ssh/TWOJ_KLUCZ_PRYWATNY
+   ```
+
+2. **Sprawdź czy klucz publiczny jest w authorized_keys:**
+   ```bash
+   # Na Raspberry Pi
+   ssh pi@192.168.1.100 "cat ~/.ssh/authorized_keys"
+   # Powinien zawierać klucz publiczny odpowiadający Twojemu kluczowi prywatnemu
+   ```
+
+3. **Przetestuj połączenie:**
+   ```bash
+   ssh -i ~/.ssh/TWOJ_KLUCZ_PRYWATNY pi@192.168.1.100
+   # Jeśli działa bez hasła - wszystko OK!
+   ```
+
+**⚠️ Częste błędy:**
+- ❌ Nie skopiowałeś całego klucza (brakuje `-----BEGIN` lub `-----END`)
+- ❌ **Dodałeś klucz publiczny zamiast prywatnego** - to najczęstszy błąd!
+  - Klucz publiczny zaczyna się od: `-----BEGIN SSH2 PUBLIC KEY-----` lub `ssh-rsa` lub `ssh-ed25519`
+  - Klucz prywatny zaczyna się od: `-----BEGIN OPENSSH PRIVATE KEY-----` lub `-----BEGIN RSA PRIVATE KEY-----`
+- ❌ Klucz publiczny nie został dodany do `authorized_keys` na Raspberry Pi
+- ❌ Złe uprawnienia na `~/.ssh/authorized_keys` (powinno być 600)
+- ❌ Klucz ma hasło - GitHub Actions nie może używać kluczy z hasłem
+
+### 🔍 Jak rozpoznać klucz publiczny vs prywatny?
+
+**Klucz PUBLICZNY** (nie używaj tego w GitHub Secrets!):
+```
+-----BEGIN SSH2 PUBLIC KEY-----
+lub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...
+lub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...
+```
+
+**Klucz PRYWATNY** (użyj tego w GitHub Secrets!):
+```
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
+...
+-----END OPENSSH PRIVATE KEY-----
+```
+
+lub starszy format:
+```
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA...
+-----END RSA PRIVATE KEY-----
+```
+
+**Jeśli masz tylko klucz publiczny:**
+1. Musisz znaleźć odpowiadający mu klucz prywatny (zwykle w `~/.ssh/id_rsa`, `~/.ssh/id_ed25519`)
+2. Lub wygeneruj nową parę kluczy
 
 ## 📁 Struktura Workflow
 
@@ -246,6 +468,48 @@ docker-compose up -d
 **Uwaga:** Workflow **nie nadpisuje** istniejącego pliku `.env` podczas deploymentu, więc twoje zmiany są bezpieczne.
 
 ## 🛠️ Rozwiązywanie problemów
+
+### Problem: "ssh: no key found" lub "ssh.ParsePrivateKey: ssh: no key found"
+
+**Przyczyna:** Klucz SSH nie jest poprawnie skonfigurowany w GitHub Secrets.
+
+**Rozwiązanie krok po kroku:**
+
+1. **Sprawdź czy klucz istnieje w GitHub Secrets:**
+   - Przejdź do: `https://github.com/TWOJE_REPO/settings/secrets/actions`
+   - Sprawdź czy `RASPBERRY_PI_SSH_KEY` istnieje
+
+2. **Sprawdź format klucza:**
+   - Klucz musi zaczynać się od: `-----BEGIN OPENSSH PRIVATE KEY-----`
+   - Klucz musi kończyć się na: `-----END OPENSSH PRIVATE KEY-----`
+   - Musi zawierać wszystkie linie między nimi
+
+3. **Wygeneruj nowy klucz (jeśli stary nie działa):**
+   ```bash
+   # Usuń stary klucz
+   rm ~/.ssh/github_actions_raspberry_pi*
+   
+   # Wygeneruj nowy
+   ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions_raspberry_pi
+   # Naciśnij Enter dwa razy (bez hasła)
+   
+   # Skopiuj klucz publiczny na Raspberry Pi
+   ssh-copy-id -i ~/.ssh/github_actions_raspberry_pi.pub pi@192.168.1.100
+   
+   # Skopiuj CAŁY klucz prywatny
+   cat ~/.ssh/github_actions_raspberry_pi
+   ```
+
+4. **Zaktualizuj GitHub Secret:**
+   - Usuń stary `RASPBERRY_PI_SSH_KEY`
+   - Dodaj nowy z CAŁĄ zawartością klucza prywatnego
+
+5. **Sprawdź uprawnienia na Raspberry Pi:**
+   ```bash
+   ssh pi@192.168.1.100
+   chmod 700 ~/.ssh
+   chmod 600 ~/.ssh/authorized_keys
+   ```
 
 ### Problem: "Permission denied (publickey)"
 
@@ -587,6 +851,9 @@ Workflow `deploy-raspberry-pi-docker.yml` już zawiera:
 - [ ] Plik `env.example` istnieje w repozytorium
 - [ ] Plik `.env` skonfigurowany na Raspberry Pi (lub zostanie utworzony automatycznie z szablonu)
 - [ ] Wszystkie wymagane zmienne środowiskowe wypełnione w `.env`
+- [ ] **Klucz SSH poprawnie skonfigurowany w GitHub Secrets** (`RASPBERRY_PI_SSH_KEY` zawiera CAŁY klucz prywatny)
+- [ ] **Klucz publiczny dodany do `~/.ssh/authorized_keys` na Raspberry Pi**
+- [ ] **Test połączenia SSH działa lokalnie** (`ssh -i ~/.ssh/github_actions_raspberry_pi pi@IP`)
 
 ### Dla deploymentu PM2:
 - [ ] Node.js >= 18.17.0 zainstalowany
