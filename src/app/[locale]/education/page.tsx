@@ -11,8 +11,8 @@ export default function EducationPage() {
 
   const certificates = [
     {
-      key: 'aws',
-      icon: '☁️',
+      key: 'AI Devs',
+      icon: '🤖',
       color: 'from-orange-500 to-yellow-500'
     },
     {
@@ -21,8 +21,8 @@ export default function EducationPage() {
       color: 'from-blue-500 to-cyan-500'
     },
     {
-      key: 'docker',
-      icon: '🐳',
+      key: 'react-native',
+      icon: '�‍💻',
       color: 'from-blue-600 to-blue-800'
     },
     {
@@ -34,25 +34,25 @@ export default function EducationPage() {
 
   const courses = [
     {
-      title: "React Development",
-      platform: "Meta",
-      period: "2023",
+      title: "React Native Development",
+      platform: "Udemy",
+      period: "2020",
       technologies: "React, JavaScript, ES6+",
       description: "Zaawansowany kurs React i ekosystemu JavaScript"
     },
     {
-      title: "AWS Cloud Computing",
-      platform: "Amazon Web Services",
-      period: "2023",
-      technologies: "AWS, CloudFormation, EC2, S3",
+      title: "React Development",
+      platform: "Udemy",
+      period: "2021",
+      technologies: "React, JavaScript, ES6+",
       description: "Certyfikacja w zakresie projektowania aplikacji w chmurze AWS"
     },
     {
-      title: "Docker & Containers",
-      platform: "Docker Inc.",
-      period: "2022",
-      technologies: "Docker, Kubernetes, DevOps",
-      description: "Konteneryzacja aplikacji i zarządzanie infrastrukturą"
+      title: "AI Devs",
+      platform: "AI Devs",
+      period: "2024",
+      technologies: "LLM, AI, Python",
+      description: "Wykozytanie LLM api w aplikacjach"
     },
     {
       title: "TypeScript Fundamentals",
@@ -63,15 +63,15 @@ export default function EducationPage() {
     },
     {
       title: "Node.js Backend",
-      platform: "Various",
+      platform: "Udemy",
       period: "2021-2022",
       technologies: "Node.js, Express, MongoDB",
       description: "Tworzenie aplikacji backendowych z Node.js"
     },
     {
-      title: "Python & AI",
+      title: "Python & OpenCV",
       platform: "Various",
-      period: "2020-2021",
+      period: "2019",
       technologies: "Python, Machine Learning, AI",
       description: "Podstawy programowania w Python i sztucznej inteligencji"
     }

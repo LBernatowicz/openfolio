@@ -110,17 +110,23 @@
           "date": "2023",
           "description": "Certificate confirming advanced skills in React and JavaScript ecosystem"
         },
-        "docker": {
-          "title": "Docker Certified Associate",
-          "issuer": "Docker Inc.",
-          "date": "2022",
-          "description": "Certificate confirming skills in containerization and Docker application management"
+        "react-native": {
+          "title": "React Native Developer",
+          "issuer": "Meta",
+          "date": "2023",
+          "description": "Certificate confirming skills in building mobile applications with React Native"
         },
         "typescript": {
           "title": "TypeScript Fundamentals",
           "issuer": "Microsoft",
           "date": "2022",
           "description": "Certificate confirming knowledge of TypeScript and advanced programming patterns"
+        },
+        "AI Devs": {
+          "title": "AI Devs Certification",
+          "issuer": "AI Devs",
+          "date": "2024",
+          "description": "Certificate confirming skills in using LLM APIs in applications and working with AI"
         }
       }
     }

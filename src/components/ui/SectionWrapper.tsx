@@ -10,11 +10,12 @@ interface SectionWrapperProps {
   className?: string;
   hasExternalLink?: boolean;
   style?: React.CSSProperties;
+  onClick?: () => void;
 }
 
-export default function SectionWrapper({ children, width, height, colStart, rowStart, className = '', hasExternalLink = false, style }: SectionWrapperProps) {
+export default function SectionWrapper({ children, width, height, colStart, rowStart, className = '', hasExternalLink = false, style, onClick }: SectionWrapperProps) {
   return (
-    <Card width={width} height={height} colStart={colStart} rowStart={rowStart} className={className} hasExternalLink={hasExternalLink} style={style}>
+    <Card width={width} height={height} colStart={colStart} rowStart={rowStart} className={className} hasExternalLink={hasExternalLink} style={style} onClick={onClick}>
       {children}
     </Card>
   );

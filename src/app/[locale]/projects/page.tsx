@@ -15,6 +15,24 @@ export default function ProjectsPage() {
     router.push(`/projects/${projectId}`);
   };
 
+  // Sort projects by the date of the newest article
+  const sortedProjects = [...projects].sort((a, b) => {
+    // Get the newest article date for each project
+    const getNewestArticleDate = (project: typeof projects[0]) => {
+      if (!project.entries || project.entries.length === 0) {
+        return 0; // Projects without articles go to the end
+      }
+      const dates = project.entries.map(entry => new Date(entry.date).getTime());
+      return Math.max(...dates);
+    };
+
+    const dateA = getNewestArticleDate(a);
+    const dateB = getNewestArticleDate(b);
+
+    // Sort descending (newest first)
+    return dateB - dateA;
+  });
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -63,7 +81,7 @@ export default function ProjectsPage() {
         {/* Projects Grid */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
+            {sortedProjects.map((project) => (
             <div
               key={project.id}
               onClick={() => handleProjectClick(project.id)}

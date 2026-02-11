@@ -354,7 +354,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           
           <div className="max-w-4xl mx-auto">
             <div className="space-y-3">
-              {project.entries.slice().reverse().map((entry, index) => (
+              {project.entries.map((entry, index) => (
                 <div
                   key={entry.id}
                   onClick={() => router.push(`/projects/${project.id}/articles/${entry.id}`)}
@@ -373,7 +373,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                           {entry.title}
                         </h4>
                         <span className="text-xs text-gray-400 font-mono">
-                          v{String(index + 1).padStart(2, '0')}.0.0
+                          {entry.version ? `v${entry.version}` : `v${String(index + 1).padStart(2, '0')}.0.0`}
                         </span>
                       </div>
                       <p className="text-sm text-gray-300 mb-2 max-h-[100px] overflow-hidden" style={{

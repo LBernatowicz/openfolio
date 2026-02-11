@@ -14,10 +14,9 @@ export default function ExperienceSection() {
   };
 
   return (
-    <SectionWrapper width={1} height={1} style={{gridRow: '4'}} hasExternalLink={true}>
+    <SectionWrapper width={1} height={1} style={{gridRow: '4'}} hasExternalLink={true} onClick={handleClick}>
         <div 
-          className="flex items-center gap-2 mb-6 cursor-pointer"
-          onClick={handleClick}
+          className="flex items-center gap-2 mb-6"
         >
           <Briefcase className="w-6 h-6 text-blue-500 flex-shrink-0" />
           <h2 className="text-xl font-bold text-white whitespace-nowrap">{t('title')}</h2>

@@ -11,9 +11,10 @@ interface CardProps {
   rowStart?: number;
   hasExternalLink?: boolean;
   style?: React.CSSProperties;
+  onClick?: () => void;
 }
 
-export default function Card({ children, className = '', width = 1, height = 1, colStart, rowStart, hasExternalLink = false, style }: CardProps) {
+export default function Card({ children, className = '', width = 1, height = 1, colStart, rowStart, hasExternalLink = false, style, onClick }: CardProps) {
   const [isVisible, setIsVisible] = useState(false);
   
   const widthClass = `col-span-${width}`;
@@ -41,8 +42,9 @@ export default function Card({ children, className = '', width = 1, height = 1, 
         isVisible 
           ? 'opacity-100 transform translate-y-0' 
           : 'opacity-0 transform translate-y-8'
-      }`} 
+      } ${onClick ? 'cursor-pointer' : ''}`} 
       style={style}
+      onClick={onClick}
     >
       {/* Tło wewnątrz sekcji zasłaniające światło */}
       <div 

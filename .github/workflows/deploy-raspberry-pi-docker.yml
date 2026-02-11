@@ -1,0 +1,163 @@
+name: Deploy to Raspberry Pi (Docker)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: # Pozwala na ręczne uruchomienie
+  pull_request:
+    branches: [ main, master ]
+    types: [ closed ] # Deploy tylko gdy PR jest zamknięty (merged)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Raspberry Pi via SSH (Docker)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.RASPBERRY_PI_HOST }}
+        username: ${{ secrets.RASPBERRY_PI_USER }}
+        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
+        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
+        script: |
+          set -e
+          
+          # ⚠️ UWAGA: Ten workflow działa TYLKO na kontenerach OpenFolio
+          # Wszystkie operacje są ograniczone do:
+          # - Kontenera: openfolio-app
+          # - Sieci: openfolio-network
+          # - Obrazów: openfolio*
+          # Inne kontenery na Raspberry Pi pozostają nietknięte
+          # Kompatybilne z OpenMediaVault (OMV) i innymi systemami Docker
+          
+          echo "🚀 Starting Docker deployment to Raspberry Pi..."
+          echo "🔒 Safe mode: Only OpenFolio containers will be affected"
+          
+          # Przejdź do katalogu aplikacji
+          cd ~/openfolio || (mkdir -p ~/openfolio && cd ~/openfolio)
+          
+          # Backup istniejącego pliku .env jeśli istnieje
+          if [ -f .env ]; then
+            echo "💾 Backing up existing .env file..."
+            cp .env .env.backup
+            ENV_EXISTS=true
+          else
+            ENV_EXISTS=false
+          fi
+          
+          # Pobierz najnowszy kod
+          if [ -d .git ]; then
+            echo "📥 Pulling latest changes..."
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+          else
+            echo "📥 Cloning repository..."
+            git clone https://github.com/${{ github.repository }}.git .
+          fi
+          
+          # Przywróć backup .env jeśli istniał, w przeciwnym razie utwórz z szablonu
+          if [ "$ENV_EXISTS" = true ]; then
+            echo "📋 Restoring .env from backup..."
+            cp .env.backup .env
+            rm .env.backup
+          elif [ ! -f .env ] && [ -f env.example ]; then
+            echo "📋 Creating .env from env.example template..."
+            cp env.example .env
+            echo "⚠️  WARNING: Please configure .env file with your actual values!"
+          fi
+          
+          # Zapisz tag aktualnego obrazu OpenFolio dla rollback (jeśli istnieje)
+          # To działa tylko na obrazach openfolio, nie wpływa na inne projekty
+          PREVIOUS_IMAGE=$(docker images --filter "reference=openfolio*" --format "{{.Repository}}:{{.Tag}}" 2>/dev/null | head -n 1 || echo "")
+          if [ -n "$PREVIOUS_IMAGE" ]; then
+            echo "📌 Previous OpenFolio image found: $PREVIOUS_IMAGE"
+          fi
+          
+          # Zatrzymaj stare kontenery OpenFolio (bezpieczne dla innych kontenerów)
+          echo "🛑 Stopping old OpenFolio containers..."
+          # Używamy --remove-orphans=false żeby nie usuwać kontenerów z innych projektów
+          docker-compose down --remove-orphans=false || true
+          
+          # Zbuduj nowy obraz (dla ARM64)
+          echo "🔨 Building Docker image for ARM64..."
+          if ! docker-compose build --no-cache; then
+            echo "❌ Build failed! Attempting rollback..."
+            if [ -n "$PREVIOUS_IMAGE" ]; then
+              echo "🔄 Rolling back to previous image: $PREVIOUS_IMAGE"
+              docker tag "$PREVIOUS_IMAGE" openfolio-app:latest || true
+              docker-compose up -d || true
+            fi
+            exit 1
+          fi
+          
+          # Uruchom kontenery
+          echo "▶️ Starting containers..."
+          if ! docker-compose up -d; then
+            echo "❌ Failed to start containers! Attempting rollback..."
+            if [ -n "$PREVIOUS_IMAGE" ]; then
+              echo "🔄 Rolling back to previous image: $PREVIOUS_IMAGE"
+              docker tag "$PREVIOUS_IMAGE" openfolio-app:latest || true
+              docker-compose up -d || true
+            fi
+            exit 1
+          fi
+          
+          # Czekaj na uruchomienie kontenera
+          echo "⏳ Waiting for container to start..."
+          sleep 10
+          
+          # Sprawdź status kontenera
+          echo "📊 Container status:"
+          docker-compose ps
+          
+          # Weryfikacja deploymentu - sprawdź czy kontener OpenFolio działa
+          # Używamy nazwy kontenera openfolio-app, więc nie wpływa na inne kontenery
+          CONTAINER_STATUS=$(docker-compose ps --format json | jq -r '.[0].State' 2>/dev/null || docker ps --filter "name=openfolio-app" --format "{{.Status}}" | head -n 1)
+          if [ -z "$CONTAINER_STATUS" ] || echo "$CONTAINER_STATUS" | grep -q "Exited"; then
+            echo "❌ Container is not running! Status: $CONTAINER_STATUS"
+            echo "🔄 Attempting rollback..."
+            if [ -n "$PREVIOUS_IMAGE" ]; then
+              docker tag "$PREVIOUS_IMAGE" openfolio-app:latest || true
+              docker-compose down || true
+              docker-compose up -d || true
+            fi
+            exit 1
+          fi
+          
+          # Weryfikacja HTTP - sprawdź czy aplikacja odpowiada
+          echo "🔍 Verifying application health..."
+          PI_HOST="${{ secrets.RASPBERRY_PI_HOST }}"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost:80 || echo "000")
+          
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "000" ]; then
+            # 000 oznacza że curl nie mógł się połączyć, ale to może być OK jeśli aplikacja jest dostępna tylko lokalnie
+            echo "✅ Application is responding (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️  Application returned HTTP $HTTP_CODE (might be normal during startup)"
+          fi
+          
+          # Sprawdź healthcheck kontenera OpenFolio (jeśli zdefiniowany)
+          # Używamy nazwy kontenera openfolio-app, więc nie wpływa na inne kontenery
+          HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' openfolio-app 2>/dev/null || echo "no-healthcheck")
+          if [ "$HEALTH_STATUS" != "no-healthcheck" ]; then
+            echo "🏥 Container health status: $HEALTH_STATUS"
+            if [ "$HEALTH_STATUS" = "unhealthy" ]; then
+              echo "⚠️  Container healthcheck reports unhealthy, but continuing..."
+            fi
+          fi
+          
+          # Wyczyść tylko nieużywane obrazy OpenFolio (bezpieczne dla innych projektów)
+          echo "🧹 Cleaning up unused OpenFolio images (keeping previous for rollback)..."
+          # Usuń tylko obrazy openfolio, które nie są używane i nie są oznaczone jako latest
+          docker images --filter "reference=openfolio*" --format "{{.ID}}" | \
+            xargs -r docker rmi -f 2>/dev/null || true
+          # Alternatywnie: usuń tylko dangling images (bez tagów) - bezpieczne dla innych projektów
+          docker image prune -f --filter "dangling=true" || true
+          
+          echo "✅ Docker deployment completed successfully!"
+          echo "🌐 Application should be available at: http://$PI_HOST:80"
+

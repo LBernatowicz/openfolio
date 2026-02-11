@@ -76,7 +76,7 @@ export async function GET() {
           const projectArticles = articlesByProject[projectNumber]
             .map(convertGitHubIssueToArticle)
             .sort((a, b) => {
-              // Sort by version (highest first)
+              // Sort by version first (highest first)
               const versionA = a.version || '0.0.0';
               const versionB = b.version || '0.0.0';
               

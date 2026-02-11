@@ -11,17 +11,12 @@ export default function PortfolioSection() {
   const router = useRouter();
   const { projects, loading, error } = useGitHubProjects();
 
-  const handleProjectClick = (projectId: string) => {
-    router.push(`/projects/${projectId}`);
-  };
-
   const featuredProjects = projects.slice(0, 2);
 
   return (
-    <SectionWrapper width={2} height={1} hasExternalLink={true}>
+    <SectionWrapper width={2} height={1} hasExternalLink={true} onClick={() => router.push('/projects')}>
       <div 
-        className="flex items-center gap-2 mb-6 cursor-pointer"
-        onClick={() => router.push('/projects')}
+        className="flex items-center gap-2 mb-6"
       >
         <Briefcase className="w-6 h-6 text-blue-500 flex-shrink-0" />
         <h2 className="text-xl font-bold text-white whitespace-nowrap">{t('title')}</h2>
@@ -47,11 +42,10 @@ export default function PortfolioSection() {
           {featuredProjects.map((project) => (
           <div
             key={project.id}
-            onClick={() => handleProjectClick(project.id)}
-            className="group cursor-pointer p-4 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 hover:border-slate-600/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
+            className="group p-4 rounded-2xl bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50"
           >
             <div className="flex items-start justify-between gap-3 mb-3">
-              <h3 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors duration-200 leading-tight">
+              <h3 className="text-sm font-bold text-white leading-tight">
                 {project.title}
               </h3>
               <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
