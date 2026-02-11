@@ -44,12 +44,14 @@ cat ~/.ssh/github_actions_raspberry_pi
 1. Przejdź do: `https://github.com/TWOJE_REPO/settings/secrets/actions`
 2. Dodaj następujące secrets:
 
-| Secret Name | Wartość |
-|------------|---------|
-| `RASPBERRY_PI_HOST` | IP Raspberry Pi (np. `192.168.1.100`) |
-| `RASPBERRY_PI_USER` | Użytkownik SSH (np. `pi`) |
-| `RASPBERRY_PI_SSH_KEY` | **CAŁY** klucz prywatny (z `-----BEGIN` do `-----END`) |
-| `RASPBERRY_PI_PORT` | Port SSH (opcjonalnie, domyślnie `22`) |
+| Secret Name | Wartość | Wymagane | Przykład |
+|------------|---------|----------|----------|
+| `RASPBERRY_PI_HOST` | **Adres IP lub hostname Raspberry Pi** | ✅ **TAK** | `192.168.1.100` lub `raspberrypi.local` |
+| `RASPBERRY_PI_USER` | Użytkownik SSH | ✅ **TAK** | `pi` |
+| `RASPBERRY_PI_SSH_KEY` | **CAŁY** klucz prywatny (z `-----BEGIN` do `-----END`) | ✅ **TAK** | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
+| `RASPBERRY_PI_PORT` | Port SSH | ⚠️ Opcjonalnie | `22` (domyślnie) |
+
+**⚠️ Ważne:** Wszystkie trzy secrets (`RASPBERRY_PI_HOST`, `RASPBERRY_PI_USER`, `RASPBERRY_PI_SSH_KEY`) są **wymagane**!
 
 ### 4. Uruchomienie deploymentu
 
@@ -468,6 +470,93 @@ docker-compose up -d
 **Uwaga:** Workflow **nie nadpisuje** istniejącego pliku `.env` podczas deploymentu, więc twoje zmiany są bezpieczne.
 
 ## 🛠️ Rozwiązywanie problemów
+
+### Problem: "missing server host" lub "Error: missing server host"
+
+**Przyczyna:** Secret `RASPBERRY_PI_HOST` nie jest skonfigurowany lub jest pusty w GitHub Secrets.
+
+**Rozwiązanie:**
+
+1. **Sprawdź czy secret istnieje:**
+   - Przejdź do: `https://github.com/TWOJE_REPO/settings/secrets/actions`
+   - Sprawdź czy `RASPBERRY_PI_HOST` istnieje
+
+2. **Dodaj lub zaktualizuj secret:**
+   - Kliknij **"New repository secret"** (lub edytuj istniejący)
+   - **Name:** `RASPBERRY_PI_HOST`
+   - **Secret:** Adres IP lub hostname Raspberry Pi
+     - Przykład: `192.168.1.100`
+     - Przykład: `raspberrypi.local`
+     - Przykład: `192.168.0.50`
+
+3. **Sprawdź czy masz wszystkie wymagane secrets:**
+   - ✅ `RASPBERRY_PI_HOST` - adres IP Raspberry Pi
+   - ✅ `RASPBERRY_PI_USER` - użytkownik SSH (np. `pi`)
+   - ✅ `RASPBERRY_PI_SSH_KEY` - klucz prywatny SSH
+   - ⚠️ `RASPBERRY_PI_PORT` - opcjonalnie (domyślnie 22)
+
+4. **Jak znaleźć właściwy adres IP Raspberry Pi:**
+
+   Jeśli `hostname -I` zwraca wiele adresów IP, musisz wybrać właściwy:
+
+   ```bash
+   # Na Raspberry Pi - sprawdź wszystkie interfejsy
+   ip addr show
+   
+   # Lub bardziej czytelnie:
+   ip -4 addr show | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+   
+   # Sprawdź który interfejs jest aktywny (UP)
+   ip link show
+   
+   # Sprawdź routing - domyślna brama pokaże główny interfejs
+   ip route | grep default
+   ```
+
+   **Który adres IP wybrać?**
+   - ✅ **Użyj adresu IP z sieci lokalnej** (zwykle zaczyna się od `192.168.x.x` lub `10.x.x.x`)
+   - ❌ **NIE używaj** `127.0.0.1` (localhost)
+   - ❌ **NIE używaj** `172.17.x.x` (Docker bridge network)
+   - ❌ **NIE używaj** adresów IPv6 (zawierają `:`)
+
+   **Przykład:**
+   ```bash
+   # Jeśli hostname -I zwraca:
+   # 192.168.1.100 172.17.0.1 10.0.0.5
+   
+   # Użyj: 192.168.1.100 (adres z sieci lokalnej)
+   ```
+
+   **Szybkie rozwiązanie - automatyczne znalezienie właściwego IP:**
+   ```bash
+   # Na Raspberry Pi - znajdź główny adres IP z sieci lokalnej
+   # To polecenie znajdzie adres IP z interfejsu, który ma domyślną bramę
+   ip route get 8.8.8.8 | awk '{print $7}' | head -1
+   
+   # Lub prostsze - znajdź pierwszy adres IP z sieci lokalnej (nie localhost, nie Docker)
+   hostname -I | awk '{print $1}'
+   # To zwykle zwróci właściwy adres IP
+   ```
+
+   **Szybka weryfikacja:**
+   ```bash
+   # Sprawdź czy możesz się połączyć z tym adresem
+   ssh pi@192.168.1.100
+   # Jeśli działa, to jest właściwy adres IP!
+   
+   # Lub przetestuj wszystkie adresy IP z hostname -I
+   for ip in $(hostname -I); do
+     echo "Testowanie: $ip"
+     ssh -o ConnectTimeout=2 pi@$ip "echo 'Działa!'" 2>/dev/null && echo "✅ $ip działa!" && break
+   done
+   ```
+
+5. **Zweryfikuj połączenie:**
+   ```bash
+   # Przetestuj połączenie lokalnie
+   ssh pi@192.168.1.100
+   # Jeśli działa, użyj tego samego adresu w GitHub Secrets
+   ```
 
 ### Problem: "ssh: no key found" lub "ssh.ParsePrivateKey: ssh: no key found"
 
