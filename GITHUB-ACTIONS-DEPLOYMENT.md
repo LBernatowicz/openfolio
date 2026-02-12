@@ -46,7 +46,7 @@ cat ~/.ssh/github_actions_raspberry_pi
 
 | Secret Name | Wartość | Wymagane | Przykład |
 |------------|---------|----------|----------|
-| `RASPBERRY_PI_HOST` | **Adres IP lub hostname Raspberry Pi** | ✅ **TAK** | `192.168.1.100` lub `raspberrypi.local` |
+| `RASPBERRY_PI_HOST` | **Adres IP lub hostname Raspberry Pi** | ✅ **TAK** | `192.168.1.100`, `203.0.113.50`, `100.64.1.2` (Tailscale), `raspberrypi.example.com` |
 | `RASPBERRY_PI_USER` | Użytkownik SSH | ✅ **TAK** | `pi` |
 | `RASPBERRY_PI_SSH_KEY` | **CAŁY** klucz prywatny (z `-----BEGIN` do `-----END`) | ✅ **TAK** | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
 | `RASPBERRY_PI_PORT` | Port SSH | ⚠️ Opcjonalnie | `22` (domyślnie) |
@@ -514,17 +514,37 @@ docker-compose up -d
    ```
 
    **Który adres IP wybrać?**
+   
+   **Dla sieci lokalnej:**
    - ✅ **Użyj adresu IP z sieci lokalnej** (zwykle zaczyna się od `192.168.x.x` lub `10.x.x.x`)
    - ❌ **NIE używaj** `127.0.0.1` (localhost)
    - ❌ **NIE używaj** `172.17.x.x` (Docker bridge network)
-   - ❌ **NIE używaj** adresów IPv6 (zawierają `:`)
+   
+   **Dla publicznego adresu IP:**
+   - ✅ **Możesz użyć publicznego adresu IP** (jeśli Raspberry Pi ma bezpośredni dostęp do internetu)
+   - ✅ **Możesz użyć domeny/hostname** (np. `raspberrypi.example.com`)
+   - ✅ **Możesz użyć adresu Tailscale/ZeroTier** (np. `100.x.x.x` dla Tailscale)
+   
+   **Dla IPv6:**
+   - ⚠️ **Adresy IPv6** (zawierają `:`) - GitHub Actions może nie obsługiwać, lepiej użyć IPv4
 
-   **Przykład:**
+   **Przykłady różnych typów adresów IP:**
    ```bash
+   # Sieć lokalna (192.168.x.x) - wymaga port forwarding lub VPN
    # Jeśli hostname -I zwraca:
    # 192.168.1.100 172.17.0.1 10.0.0.5
+   # Użyj: 192.168.1.100 (ale potrzebujesz port forwarding!)
    
-   # Użyj: 192.168.1.100 (adres z sieci lokalnej)
+   # Publiczny adres IP - działa bezpośrednio z internetu
+   # Jeśli masz publiczny IP: 203.0.113.50
+   # Użyj: 203.0.113.50 (działa bezpośrednio!)
+   
+   # Tailscale/ZeroTier - działa bezpośrednio z internetu
+   # Jeśli masz Tailscale IP: 100.64.1.2
+   # Użyj: 100.64.1.2 (działa bezpośrednio!)
+   
+   # Domena/hostname - działa jeśli DNS jest skonfigurowany
+   # Użyj: raspberrypi.example.com lub raspberrypi.dyndns.org
    ```
 
    **Szybkie rozwiązanie - automatyczne znalezienie właściwego IP:**
@@ -557,6 +577,61 @@ docker-compose up -d
    ssh pi@192.168.1.100
    # Jeśli działa, użyj tego samego adresu w GitHub Secrets
    ```
+
+   **⚠️ WAŻNE - Problem z dostępem z internetu:**
+   
+   Jeśli używasz adresu IP z sieci lokalnej (np. `192.168.1.100`), GitHub Actions **NIE BĘDZIE MÓGŁ** się połączyć z internetu!
+   
+   **Rozwiązania:**
+   - **Opcja 1: Port forwarding w routerze** (zalecane)
+     - Skonfiguruj port forwarding: port 22 (zewnętrzny) → IP Raspberry Pi:22 (wewnętrzny)
+     - Użyj publicznego adresu IP routera w `RASPBERRY_PI_HOST`
+   - **Opcja 2: VPN** - połącz GitHub Actions z siecią lokalną przez VPN
+   - **Opcja 3: Tailscale/ZeroTier** - użyj sieci VPN typu mesh
+   - **Opcja 4: Reverse SSH tunnel** - skonfiguruj tunel SSH z Raspberry Pi do serwera dostępnego z internetu
+
+### Problem: "dial tcp ***:22: i/o timeout"
+
+**Przyczyna:** GitHub Actions nie może połączyć się z Raspberry Pi przez SSH (timeout).
+
+**Rozwiązanie:**
+
+1. **Sprawdź czy Raspberry Pi jest dostępne z internetu:**
+   ```bash
+   # Z twojego komputera lokalnego
+   ping 192.168.1.100
+   ssh pi@192.168.1.100
+   # Jeśli działa lokalnie, ale nie z GitHub Actions, to problem z dostępem z internetu
+   ```
+
+2. **Sprawdź firewall na Raspberry Pi:**
+   ```bash
+   # Na Raspberry Pi
+   sudo ufw status
+   # Upewnij się, że port 22 (SSH) jest otwarty
+   sudo ufw allow 22/tcp
+   ```
+
+3. **Sprawdź czy SSH działa:**
+   ```bash
+   # Na Raspberry Pi
+   sudo systemctl status ssh
+   # Jeśli nie działa:
+   sudo systemctl enable ssh
+   sudo systemctl start ssh
+   ```
+
+4. **Jeśli Raspberry Pi jest za routerem (NAT):**
+   - GitHub Actions działa z internetu, więc potrzebujesz:
+     - **Opcja A:** Port forwarding w routerze (port 22 → IP Raspberry Pi)
+     - **Opcja B:** VPN do sieci lokalnej
+     - **Opcja C:** Użyj usługi typu ngrok lub podobnej (tylko do testów)
+
+5. **Sprawdź czy adres IP jest poprawny:**
+   - Jeśli używasz adresu IP z sieci lokalnej (np. `192.168.1.100`), GitHub Actions nie będzie mógł się połączyć z internetu
+   - Potrzebujesz publicznego adresu IP lub port forwarding
+
+**⚠️ Ważne:** Jeśli Raspberry Pi jest w sieci lokalnej za routerem, musisz skonfigurować port forwarding w routerze lub użyć VPN.
 
 ### Problem: "ssh: no key found" lub "ssh.ParsePrivateKey: ssh: no key found"
 

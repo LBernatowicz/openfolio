@@ -23,6 +23,8 @@ jobs:
         username: ${{ secrets.RASPBERRY_PI_USER }}
         key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
+        timeout: 60s
+        command_timeout: 30m
         script: |
           set -e
           
