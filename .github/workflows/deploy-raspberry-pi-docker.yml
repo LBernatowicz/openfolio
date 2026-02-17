@@ -13,9 +13,92 @@ jobs:
     name: 🔍 Verify SSH Connection
     runs-on: ubuntu-latest
     steps:
+    - name: 🔍 Check GitHub Secrets
+      run: |
+        echo "=========================================="
+        echo "🔍 Checking GitHub Secrets Configuration"
+        echo "=========================================="
+        if [ -z "${{ secrets.RASPBERRY_PI_HOST }}" ]; then
+          echo "❌ ERROR: RASPBERRY_PI_HOST is not set!"
+          echo "   Please add RASPBERRY_PI_HOST to GitHub Secrets"
+          exit 1
+        else
+          echo "✅ RASPBERRY_PI_HOST is set"
+        fi
+        
+        if [ -z "${{ secrets.RASPBERRY_PI_USER }}" ]; then
+          echo "❌ ERROR: RASPBERRY_PI_USER is not set!"
+          echo "   Please add RASPBERRY_PI_USER to GitHub Secrets"
+          exit 1
+        else
+          echo "✅ RASPBERRY_PI_USER is set"
+        fi
+        
+        if [ -z "${{ secrets.RASPBERRY_PI_SSH_KEY }}" ]; then
+          echo "❌ ERROR: RASPBERRY_PI_SSH_KEY is not set!"
+          echo "   Please add RASPBERRY_PI_SSH_KEY to GitHub Secrets"
+          exit 1
+        else
+          echo "✅ RASPBERRY_PI_SSH_KEY is set"
+          # Sprawdź format klucza
+          KEY_START=$(echo "${{ secrets.RASPBERRY_PI_SSH_KEY }}" | head -c 50)
+          if echo "$KEY_START" | grep -q "BEGIN.*PRIVATE KEY"; then
+            echo "✅ SSH key format looks correct (private key)"
+          elif echo "$KEY_START" | grep -q "BEGIN SSH2 PUBLIC KEY"; then
+            echo "❌ ERROR: You provided a PUBLIC key instead of PRIVATE key!"
+            echo ""
+            echo "   🔴 Problem: You're using id_ed25519.pub (PUBLIC key)"
+            echo "   ✅ Solution: Use id_ed25519 (PRIVATE key - without .pub)"
+            echo ""
+            echo "   📋 How to fix:"
+            echo "   1. On your local machine, run:"
+            echo "      cat ~/.ssh/id_ed25519"
+            echo ""
+            echo "   2. Copy the ENTIRE output (starts with -----BEGIN OPENSSH PRIVATE KEY-----)"
+            echo ""
+            echo "   3. Paste it into GitHub Secrets → RASPBERRY_PI_SSH_KEY"
+            echo ""
+            echo "   ⚠️  Important:"
+            echo "   - Use id_ed25519 (PRIVATE key) - NOT id_ed25519.pub (PUBLIC key)"
+            echo "   - Private key file: ~/.ssh/id_ed25519"
+            echo "   - Public key file: ~/.ssh/id_ed25519.pub (this is what you're using now - WRONG!)"
+            exit 1
+          elif echo "$KEY_START" | grep -q "^ssh-ed25519"; then
+            echo "❌ ERROR: You provided a PUBLIC key instead of PRIVATE key!"
+            echo ""
+            echo "   🔴 Problem: You're using id_ed25519.pub (PUBLIC key)"
+            echo "   ✅ Solution: Use id_ed25519 (PRIVATE key - without .pub)"
+            echo ""
+            echo "   📋 How to fix:"
+            echo "   1. On your local machine, run:"
+            echo "      cat ~/.ssh/id_ed25519"
+            echo ""
+            echo "   2. Copy the ENTIRE output (starts with -----BEGIN OPENSSH PRIVATE KEY-----)"
+            echo ""
+            echo "   3. Paste it into GitHub Secrets → RASPBERRY_PI_SSH_KEY"
+            echo ""
+            echo "   ⚠️  Important:"
+            echo "   - Use id_ed25519 (PRIVATE key) - NOT id_ed25519.pub (PUBLIC key)"
+            echo "   - Private key file: ~/.ssh/id_ed25519"
+            echo "   - Public key file: ~/.ssh/id_ed25519.pub (this is what you're using now - WRONG!)"
+            exit 1
+          else
+            echo "⚠️  WARNING: SSH key format might be incorrect"
+            echo "   Private key should start with: -----BEGIN OPENSSH PRIVATE KEY-----"
+            echo "   or: -----BEGIN RSA PRIVATE KEY-----"
+          fi
+        fi
+        echo ""
+        echo "📍 Connection details:"
+        echo "   Host: ${{ secrets.RASPBERRY_PI_HOST }}"
+        echo "   User: ${{ secrets.RASPBERRY_PI_USER }}"
+        echo "   Port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}"
+        echo ""
+        
     - name: 🔍 Test SSH connection
       uses: appleboy/ssh-action@v1.0.3
       id: ssh-test
+      continue-on-error: true
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -27,11 +110,6 @@ jobs:
           echo "🔍 SSH Connection Verification"
           echo "=========================================="
           echo "✅ SSH connection successful!"
-          echo ""
-          echo "📍 Connection details:"
-          echo "   Host: ${{ secrets.RASPBERRY_PI_HOST }}"
-          echo "   User: ${{ secrets.RASPBERRY_PI_USER }}"
-          echo "   Port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}"
           echo ""
           echo "🖥️  System information:"
           echo "   OS: $(uname -a)"
@@ -56,6 +134,36 @@ jobs:
           echo ""
           echo "✅ SSH verification completed successfully!"
           echo "=========================================="
+          
+    - name: ❌ SSH Connection Failed - Troubleshooting
+      if: failure()
+      run: |
+        echo "=========================================="
+        echo "❌ SSH Connection Failed"
+        echo "=========================================="
+        echo ""
+        echo "🔍 Common issues and solutions:"
+        echo ""
+        echo "1. 'ssh: no key found' error:"
+        echo "   ❌ You provided a PUBLIC key instead of PRIVATE key"
+        echo "   ✅ Solution: Use the PRIVATE key in GitHub Secrets"
+        echo "   📋 Private key starts with: -----BEGIN OPENSSH PRIVATE KEY-----"
+        echo "   📋 Public key starts with: ssh-rsa or -----BEGIN SSH2 PUBLIC KEY-----"
+        echo ""
+        echo "2. 'i/o timeout' error:"
+        echo "   ❌ GitHub Actions cannot reach your Raspberry Pi"
+        echo "   ✅ Solutions:"
+        echo "      - If using local IP (192.168.x.x): Configure port forwarding in router"
+        echo "      - Use Tailscale/ZeroTier VPN for direct access"
+        echo "      - Use public IP address if available"
+        echo ""
+        echo "3. 'Permission denied' error:"
+        echo "   ❌ SSH key is not authorized on Raspberry Pi"
+        echo "   ✅ Solution: Add public key to ~/.ssh/authorized_keys on Raspberry Pi"
+        echo ""
+        echo "📚 For detailed instructions, see: GITHUB-ACTIONS-DEPLOYMENT.md"
+        echo "=========================================="
+        exit 1
 
   deploy:
     name: 🚀 Deploy Application
