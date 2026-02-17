@@ -98,7 +98,6 @@ jobs:
     - name: 🔍 Test SSH connection
       uses: appleboy/ssh-action@v1.0.3
       id: ssh-test
-      continue-on-error: true
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -136,7 +135,7 @@ jobs:
           echo "=========================================="
           
     - name: ❌ SSH Connection Failed - Troubleshooting
-      if: failure()
+      if: steps.ssh-test.outcome == 'failure'
       run: |
         echo "=========================================="
         echo "❌ SSH Connection Failed"
