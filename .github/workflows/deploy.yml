@@ -1,0 +1,88 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Debug secrets
+        run: |
+          echo "Checking if secrets are set..."
+          if [ -n "${{ secrets.TS_AUTHKEY }}" ]; then
+            echo "TS_AUTHKEY is set"
+          else
+            echo "TS_AUTHKEY is NOT set"
+          fi
+          if [ -n "${{ secrets.RASPBERRY_PI_HOST }}" ]; then
+            echo "RASPBERRY_PI_HOST is set"
+          else
+            echo "RASPBERRY_PI_HOST is NOT set"
+          fi
+
+      - name: Setup Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
+      - name: Test connection
+        run: |
+          ping -c 3 ${{ secrets.RASPBERRY_PI_HOST }} || echo "Ping failed (might be blocked)"
+          
+      - name: Deploy via SSH
+        run: |
+          # Setup SSH key
+          mkdir -p ~/.ssh
+          echo "${{ secrets.RASPBERRY_PI_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Disable strict host checking for first connection
+          echo "Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile=/dev/null" > ~/.ssh/config
+          
+          # Test SSH connection
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=30 \
+            ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }} \
+            "echo 'SSH connection successful'"
+          
+          # Deploy
+          ssh -i ~/.ssh/deploy_key \
+            ${{ secrets.RASPBERRY_PI_USER }}@${{ secrets.RASPBERRY_PI_HOST }} \
+            'bash -s' << 'DEPLOY_SCRIPT'
+          
+          set -e
+          echo "=== Deploying OpenFolio ==="
+          
+          mkdir -p ~/openfolio
+          cd ~/openfolio
+          
+          # Backup .env
+          [ -f .env ] && cp .env .env.backup
+          
+          # Pull code
+          if [ -d .git ]; then
+            git fetch origin
+            git reset --hard origin/main
+          else
+            git clone https://github.com/${{ github.repository }}.git .
+          fi
+          
+          # Restore .env
+          [ -f .env.backup ] && mv .env.backup .env
+          [ ! -f .env ] && [ -f env.example ] && cp env.example .env
+          
+          # Docker deploy
+          docker compose down --remove-orphans || true
+          docker compose build
+          docker compose up -d
+          
+          sleep 5
+          docker compose ps
+          
+          echo "=== Deployment complete ==="
+          DEPLOY_SCRIPT

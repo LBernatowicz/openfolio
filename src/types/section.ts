@@ -14,6 +14,7 @@ export interface ProjectEntry {
   content: string;
   date: string;
   image?: string;
+  version?: string;
   comments: Comment[];
   status?: 'completed' | 'in-progress' | 'planned';
 }

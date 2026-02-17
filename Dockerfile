@@ -1,31 +1,34 @@
-# Dockerfile dla OpenFolio (kompatybilny z ARM64 i x86_64)
-FROM node:18
+FROM node:20-slim
 
-# Ustaw katalog roboczy
 WORKDIR /app
 
-# Skopiuj pliki package
-COPY package.json ./
+# Install dependencies for native modules
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Zainstaluj wszystkie zależności z maksymalną tolerancją błędów
-RUN npm install --legacy-peer-deps --force --no-audit --no-fund --no-optional
+# Copy package files
+COPY package.json package-lock.json* ./
 
-# Skopiuj kod źródłowy
+# Install dependencies (including optional for ARM64 support)
+RUN npm ci --legacy-peer-deps
+
+# Copy source code
 COPY . .
 
-# Wyłącz telemetrię Next.js
+# Disable telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Zbuduj aplikację (bez Turbopack dla kompatybilności ARM64)
-RUN npx next build
+# Build
+RUN npm run build
 
-# Ustaw zmienne środowiskowe dla produkcji
+# Production settings
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Eksponuj port
 EXPOSE 3000
 
-# Uruchom aplikację
 CMD ["npm", "start"]
