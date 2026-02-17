@@ -5,36 +5,35 @@ on:
     branches: [main]
   workflow_dispatch:
 
-env:
-  APP_DIR: ~/openfolio
-
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     
     steps:
+      - name: Setup Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
       - name: Deploy to Raspberry Pi
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.RASPBERRY_PI_HOST }}
           username: ${{ secrets.RASPBERRY_PI_USER }}
           key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-          port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
           command_timeout: 30m
           script: |
             set -e
-            
             echo "=== Deploying OpenFolio ==="
             
-            # Prepare directory
             mkdir -p ~/openfolio
             cd ~/openfolio
             
-            # Backup .env if exists
             [ -f .env ] && cp .env .env.backup
             
-            # Clone or pull
             if [ -d .git ]; then
               git fetch origin
               git reset --hard origin/main
@@ -42,17 +41,13 @@ jobs:
               git clone https://github.com/${{ github.repository }}.git .
             fi
             
-            # Restore .env
             [ -f .env.backup ] && mv .env.backup .env
             [ ! -f .env ] && [ -f env.example ] && cp env.example .env
             
-            # Deploy with Docker
             docker compose down --remove-orphans || true
             docker compose build
             docker compose up -d
             
-            # Verify
             sleep 5
             docker compose ps
-            
             echo "=== Deployment complete ==="
