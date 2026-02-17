@@ -9,34 +9,66 @@ on:
     types: [ closed ]
 
 jobs:
-  deploy:
+  verify-ssh:
+    name: 🔍 Verify SSH Connection
     runs-on: ubuntu-latest
+    steps:
+    - name: 🔍 Test SSH connection
+      uses: appleboy/ssh-action@v1.0.3
+      id: ssh-test
+      with:
+        host: ${{ secrets.RASPBERRY_PI_HOST }}
+        username: ${{ secrets.RASPBERRY_PI_USER }}
+        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
+        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
+        timeout: 30s
+        script: |
+          echo "=========================================="
+          echo "🔍 SSH Connection Verification"
+          echo "=========================================="
+          echo "✅ SSH connection successful!"
+          echo ""
+          echo "📍 Connection details:"
+          echo "   Host: ${{ secrets.RASPBERRY_PI_HOST }}"
+          echo "   User: ${{ secrets.RASPBERRY_PI_USER }}"
+          echo "   Port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}"
+          echo ""
+          echo "🖥️  System information:"
+          echo "   OS: $(uname -a)"
+          echo "   Uptime: $(uptime -p)"
+          echo ""
+          echo "🐳 Docker information:"
+          if command -v docker &> /dev/null; then
+            echo "   Docker: $(docker --version)"
+          else
+            echo "   ❌ Docker not found!"
+            exit 1
+          fi
+          if command -v docker-compose &> /dev/null; then
+            echo "   Docker Compose: $(docker-compose --version)"
+          else
+            echo "   ❌ Docker Compose not found!"
+            exit 1
+          fi
+          echo ""
+          echo "📁 Working directory:"
+          echo "   $(pwd)"
+          echo ""
+          echo "✅ SSH verification completed successfully!"
+          echo "=========================================="
+
+  deploy:
+    name: 🚀 Deploy Application
+    needs: verify-ssh
+    runs-on: ubuntu-latest
+    if: success()
     
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
       
-    - name: 🔍 Verify SSH connection
-      uses: appleboy/ssh-action@v1.0.3
-      id: verify-ssh
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30s
-        script: |
-          echo "✅ SSH connection successful"
-          echo "📍 Host: ${{ secrets.RASPBERRY_PI_HOST }}"
-          echo "👤 User: ${{ secrets.RASPBERRY_PI_USER }}"
-          echo "🐳 Docker version:"
-          docker --version || echo "❌ Docker not found"
-          echo "🐳 Docker Compose version:"
-          docker-compose --version || echo "❌ Docker Compose not found"
-      
     - name: 📁 Prepare directory
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -44,13 +76,15 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 30s
         script: |
-          echo "📁 Step 1/7: Preparing directory..."
+          echo "=========================================="
+          echo "📁 Step 1/6: Preparing directory"
+          echo "=========================================="
           cd ~/openfolio || (mkdir -p ~/openfolio && cd ~/openfolio && echo "✅ Directory created")
           echo "✅ Current directory: $(pwd)"
+          echo ""
           
     - name: 💾 Backup .env file
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -58,7 +92,9 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 30s
         script: |
-          echo "💾 Step 2/7: Backing up .env file..."
+          echo "=========================================="
+          echo "💾 Step 2/6: Backing up .env file"
+          echo "=========================================="
           cd ~/openfolio
           if [ -f .env ]; then
             cp .env .env.backup
@@ -66,10 +102,10 @@ jobs:
           else
             echo "ℹ️  No .env file found (will be created from template)"
           fi
+          echo ""
           
     - name: 📥 Pull latest code
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -77,22 +113,26 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 60s
         script: |
-          echo "📥 Step 3/7: Pulling latest code..."
+          echo "=========================================="
+          echo "📥 Step 3/6: Pulling latest code"
+          echo "=========================================="
           cd ~/openfolio
           if [ -d .git ]; then
+            echo "📥 Fetching latest changes..."
             git fetch origin
             git reset --hard origin/main || git reset --hard origin/master
             echo "✅ Code updated"
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
+            echo "📌 Commit message: $(git log -1 --pretty=%B)"
           else
             echo "📥 Cloning repository..."
             git clone https://github.com/${{ github.repository }}.git .
             echo "✅ Repository cloned"
           fi
+          echo ""
           
     - name: 📋 Setup .env file
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -100,7 +140,9 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 30s
         script: |
-          echo "📋 Step 4/7: Setting up .env file..."
+          echo "=========================================="
+          echo "📋 Step 4/6: Setting up .env file"
+          echo "=========================================="
           cd ~/openfolio
           if [ -f .env.backup ]; then
             cp .env.backup .env
@@ -112,10 +154,10 @@ jobs:
           else
             echo "ℹ️  .env file already exists"
           fi
+          echo ""
           
     - name: 🛑 Stop old containers
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -123,14 +165,20 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 60s
         script: |
-          echo "🛑 Step 5/7: Stopping old containers..."
+          echo "=========================================="
+          echo "🛑 Step 5/6: Stopping old containers"
+          echo "=========================================="
           cd ~/openfolio
-          docker-compose down --remove-orphans=false || echo "ℹ️  No containers to stop"
-          echo "✅ Old containers stopped"
+          if [ -f docker-compose.yml ]; then
+            docker-compose down --remove-orphans=false || echo "ℹ️  No containers to stop"
+            echo "✅ Old containers stopped"
+          else
+            echo "⚠️  docker-compose.yml not found"
+          fi
+          echo ""
           
     - name: 🔨 Build Docker image
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -138,21 +186,28 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 30m
         script: |
-          echo "🔨 Step 6/7: Building Docker image..."
+          echo "=========================================="
+          echo "🔨 Step 6/6: Building Docker image"
+          echo "=========================================="
           cd ~/openfolio
+          if [ ! -f docker-compose.yml ]; then
+            echo "❌ ERROR: docker-compose.yml not found!"
+            exit 1
+          fi
           echo "📦 Building for ARM64 architecture..."
           if docker-compose build --no-cache; then
             echo "✅ Docker image built successfully"
           else
             echo "❌ ERROR: Docker build failed"
-            echo "📋 Build logs:"
+            echo ""
+            echo "📋 Last 50 lines of build output:"
             docker-compose build --no-cache 2>&1 | tail -50
             exit 1
           fi
+          echo ""
           
     - name: ▶️ Start containers
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -160,20 +215,23 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 60s
         script: |
-          echo "▶️ Step 7/7: Starting containers..."
+          echo "=========================================="
+          echo "▶️ Starting containers"
+          echo "=========================================="
           cd ~/openfolio
           if docker-compose up -d; then
             echo "✅ Containers started"
           else
             echo "❌ ERROR: Failed to start containers"
+            echo ""
             echo "📋 Container logs:"
             docker-compose logs --tail=50
             exit 1
           fi
+          echo ""
           
     - name: ✅ Verify deployment
       uses: appleboy/ssh-action@v1.0.3
-      if: success()
       with:
         host: ${{ secrets.RASPBERRY_PI_HOST }}
         username: ${{ secrets.RASPBERRY_PI_USER }}
@@ -181,14 +239,18 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 30s
         script: |
-          echo "✅ Verifying deployment..."
+          echo "=========================================="
+          echo "✅ Verifying deployment"
+          echo "=========================================="
           cd ~/openfolio
           sleep 5
           echo "📊 Container status:"
           docker-compose ps
+          echo ""
           CONTAINER_STATUS=$(docker ps --filter "name=openfolio-app" --format "{{.Status}}" | head -n 1)
           if [ -z "$CONTAINER_STATUS" ]; then
             echo "❌ ERROR: Container 'openfolio-app' is not running!"
+            echo ""
             echo "📋 Container logs:"
             docker-compose logs --tail=50 openfolio
             exit 1
@@ -198,3 +260,4 @@ jobs:
           echo ""
           echo "🎉 Deployment completed successfully!"
           echo "🌐 Application available at: http://${{ secrets.RASPBERRY_PI_HOST }}:80"
+          echo "=========================================="
