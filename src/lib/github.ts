@@ -75,18 +75,8 @@ async function fetchGitHubAPI(endpoint: string) {
 // Fetch projects with their sub-issues and comments from GitHub
 export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: GitHubIssue[], articlesByProject: { [projectNumber: number]: GitHubIssue[] }, commentsByProject: { [projectNumber: number]: GitHubComment[] } }> {
   try {
-<<<<<<< HEAD
     // Step 1: Fetch all issues with label "project"
     const projectIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=all&per_page=100`);
-=======
-    console.log('🚀 === FETCHING GITHUB PROJECTS WITH SUB-ISSUES AND COMMENTS ===');
-    console.log('Fetching from:', `${GITHUB_OWNER}/${GITHUB_REPO}`);
-    
-    // Step 1: Fetch all open issues with label "project" (closed issues are hidden)
-    console.log('📋 Step 1: Fetching open issues with label "project"');
-    const projectIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=open&per_page=100`);
-    console.log(`✅ Found ${projectIssues.length} open project issues`);
->>>>>>> 73564c9c9999fdc906ddf17546b10348a0bcfcab
     
     if (projectIssues.length === 0) {
       return { projects: [], articlesByProject: {}, commentsByProject: {} };
