@@ -197,6 +197,7 @@ cat ~/.ssh/github_actions_raspberry_pi
 4. **Secret:** Wklej CAŁĄ zawartość klucza prywatnego (włącznie z `-----BEGIN` i `-----END`)
 5. Kliknij **"Add secret"**
 
+
 #### Krok 5: Zweryfikuj połączenie
 
 ```bash
