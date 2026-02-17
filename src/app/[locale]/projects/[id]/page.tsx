@@ -28,11 +28,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { id } = use(params);
 
   useEffect(() => {
-    console.log('Projects loaded:', projects);
-    console.log('Looking for project with ID:', id);
     if (projects.length > 0) {
       const foundProject = projects.find(p => p.id === id);
-      console.log('Found project:', foundProject);
       if (foundProject) {
         setProject(foundProject);
         // Load comments from API instead of project object
@@ -46,12 +43,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       const issueNumber = project.githubUrl?.match(/issues\/(\d+)/)?.[1];
       if (!issueNumber) return;
       
-      console.log('Loading comments for issue:', issueNumber);
       const response = await fetch(`/api/projects/${issueNumber}/comments`);
       if (response.ok) {
         const commentsData = await response.json();
         setComments(commentsData);
-        console.log('Comments loaded from API:', commentsData.length);
       }
     } catch (error) {
       console.error('Error loading comments:', error);
@@ -60,8 +55,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
   const handleAddComment = async (content: string, parentId?: string, isAnonymous?: boolean, displayName?: string) => {
     try {
-      console.log('Adding comment:', content, parentId, isAnonymous, displayName);
-      
       // Get the issue number from the project's githubUrl
       const issueNumber = project?.githubUrl?.match(/issues\/(\d+)/)?.[1];
       if (!issueNumber) {
@@ -69,15 +62,11 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         throw new Error('Could not find issue number for this project');
       }
       
-      console.log('Issue number found:', issueNumber);
-      
       // Get access token from session (only if not anonymous)
       let session = null;
       if (!isAnonymous) {
         const response = await fetch('/api/auth/session');
         session = await response.json();
-        
-        console.log('Session response:', session);
         
         if (!session.accessToken) {
           console.error('No access token in session');
@@ -85,7 +74,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         }
         
         // Test if the access token is valid by making a simple GitHub API call
-        console.log('Testing access token validity...');
         try {
           const testResponse = await fetch('https://api.github.com/user', {
             headers: {
@@ -99,16 +87,11 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             console.error('Access token is invalid or expired:', testResponse.status);
             throw new Error('Access token is invalid or expired. Please log in again.');
           }
-          
-          const userInfo = await testResponse.json();
-          console.log('Access token is valid for user:', userInfo.login);
         } catch (tokenError) {
           console.error('Token validation failed:', tokenError);
           throw new Error('Access token is invalid or expired. Please log in again.');
         }
       }
-      
-      console.log('Making API call to add comment...');
       
       const response2 = await fetch(`/api/projects/${issueNumber}/comments`, {
         method: 'POST',
@@ -131,8 +114,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         }),
       });
       
-      console.log('API response status:', response2.status);
-      
       if (!response2.ok) {
         const errorText = await response2.text();
         console.error('API error response:', errorText);
@@ -146,9 +127,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       }
       
       const newComment = await response2.json();
-      console.log('New comment received:', newComment);
       setComments(prev => [...prev, newComment]);
-      console.log('Comment added successfully');
       
       // Reload comments to ensure consistency
       if (project) {
@@ -161,15 +140,12 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   };
 
   const handleLikeComment = (commentId: string) => {
-    console.log('Liking comment:', commentId);
     // TODO: Implement like functionality
   };
 
   const handleReplyToComment = async (commentId: string, content: string) => {
     try {
-      console.log('Replying to comment:', commentId, content);
       await handleAddComment(content, commentId);
-      console.log('Reply added successfully');
     } catch (error) {
       console.error('Error adding reply:', error);
       throw error;
@@ -354,7 +330,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           
           <div className="max-w-4xl mx-auto">
             <div className="space-y-3">
-              {project.entries.map((entry, index) => (
+              {project.entries.filter(entry => entry.status !== 'completed').map((entry, index) => (
                 <div
                   key={entry.id}
                   onClick={() => router.push(`/projects/${project.id}/articles/${entry.id}`)}

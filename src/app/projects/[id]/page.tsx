@@ -26,16 +26,12 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { id } = use(params);
 
   useEffect(() => {
-    console.log('Projects loaded:', projects);
-    console.log('Looking for project with ID:', id);
     if (projects.length > 0) {
       const foundProject = projects.find(p => p.id === id);
-      console.log('Found project:', foundProject);
       if (foundProject) {
         setProject(foundProject);
         // Use comments from project data
         setComments(foundProject.comments || []);
-        console.log('Project comments:', foundProject.comments);
       }
     }
   }, [projects, id]);
@@ -107,7 +103,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const handleAddComment = async (content: string, parentId?: string) => {
     try {
       // TODO: Implement comment adding to GitHub
-      console.log('Adding comment:', content, parentId);
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -115,13 +110,11 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
   const handleLikeComment = (commentId: string) => {
     // TODO: Implement comment liking
-    console.log('Liking comment:', commentId);
   };
 
   const handleReplyToComment = async (commentId: string, content: string) => {
     try {
       // TODO: Implement comment replying to GitHub
-      console.log('Replying to comment:', commentId, content);
     } catch (error) {
       console.error('Error adding reply:', error);
     }
@@ -240,7 +233,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           
           <div className="max-w-4xl mx-auto">
             <div className="space-y-3">
-              {project.entries.map((entry, index) => (
+              {project.entries.filter(entry => entry.status !== 'completed').map((entry, index) => (
                 <div
                   key={entry.id}
                   onClick={() => router.push(`/projects/${project.id}/articles/${entry.id}`)}

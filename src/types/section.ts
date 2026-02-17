@@ -15,6 +15,7 @@ export interface ProjectEntry {
   date: string;
   image?: string;
   comments: Comment[];
+  status?: 'completed' | 'in-progress' | 'planned';
 }
 
 export interface Comment {

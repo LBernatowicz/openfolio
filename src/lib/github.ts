@@ -1,12 +1,6 @@
 // GitHub API integration for projects and comments
 import 'dotenv/config';
 
-// Debug environment variables
-console.log('🔍 Environment variables check:');
-console.log('GITHUB_TOKEN:', process.env.GITHUB_TOKEN ? 'SET' : 'NOT SET');
-console.log('NEXT_PUBLIC_GITHUB_USERNAME:', process.env.NEXT_PUBLIC_GITHUB_USERNAME);
-console.log('NEXT_PUBLIC_GITHUB_REPO:', process.env.NEXT_PUBLIC_GITHUB_REPO);
-
 export interface GitHubIssue {
   id: number;
   number: number;
@@ -51,22 +45,12 @@ const GITHUB_API_BASE = 'https://api.github.com';
 
 // Helper function to make GitHub API requests
 async function fetchGitHubAPI(endpoint: string) {
-  console.log(`🌐 Making GitHub API request to: ${endpoint}`);
-  console.log(`🔑 GITHUB_TOKEN exists:`, !!GITHUB_TOKEN);
-  console.log(`🔑 GITHUB_TOKEN length:`, GITHUB_TOKEN ? GITHUB_TOKEN.length : 0);
-  console.log(`🔑 GITHUB_OWNER:`, GITHUB_OWNER);
-  console.log(`🔑 GITHUB_REPO:`, GITHUB_REPO);
-  
   if (!GITHUB_TOKEN) {
     console.warn('⚠️ GITHUB_TOKEN is not set. GitHub API calls will likely fail.');
     console.warn('🔧 Please check your .env.local file for GITHUB_TOKEN');
     // Return empty array instead of throwing error
     return [];
   }
-
-  console.log(`Making request to: ${GITHUB_API_BASE}${endpoint}`);
-
-  console.log(`Using GitHub token: ${GITHUB_TOKEN.substring(0, 10)}...`);
 
   const response = await fetch(`${GITHUB_API_BASE}${endpoint}`, {
     headers: {
@@ -77,8 +61,6 @@ async function fetchGitHubAPI(endpoint: string) {
     }
   });
 
-  console.log(`GitHub API response status: ${response.status}`);
-
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`GitHub API error for ${endpoint}: ${response.status} - ${errorText}`);
@@ -87,82 +69,44 @@ async function fetchGitHubAPI(endpoint: string) {
   }
 
   const data = await response.json();
-  console.log(`GitHub API response data length: ${Array.isArray(data) ? data.length : 'not array'}`);
   return data;
 }
 
 // Fetch projects with their sub-issues and comments from GitHub
 export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: GitHubIssue[], articlesByProject: { [projectNumber: number]: GitHubIssue[] }, commentsByProject: { [projectNumber: number]: GitHubComment[] } }> {
   try {
-    console.log('🚀 === FETCHING GITHUB PROJECTS WITH SUB-ISSUES AND COMMENTS ===');
-    console.log('Fetching from:', `${GITHUB_OWNER}/${GITHUB_REPO}`);
-    
     // Step 1: Fetch all issues with label "project"
-    console.log('📋 Step 1: Fetching issues with label "project"');
     const projectIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=all&per_page=100`);
-    console.log(`✅ Found ${projectIssues.length} project issues`);
     
     if (projectIssues.length === 0) {
-      console.log('❌ No project issues found');
       return { projects: [], articlesByProject: {}, commentsByProject: {} };
     }
     
-    // Log project issues
-    projectIssues.forEach((issue: GitHubIssue, index: number) => {
-      console.log(`Project ${index + 1}: #${issue.number} - ${issue.title}`);
-      console.log(`  Labels: ${issue.labels.map(l => l.name).join(', ')}`);
-    });
-    
     // Step 2: For each project, fetch its sub-issues and comments
-    console.log('📋 Step 2: Fetching sub-issues and comments for each project');
     const articlesByProject: { [projectNumber: number]: GitHubIssue[] } = {};
     const commentsByProject: { [projectNumber: number]: GitHubComment[] } = {};
     
     for (const project of projectIssues) {
       const projectNumber = project.number;
-      console.log(`\n🔍 Processing project #${projectNumber}: ${project.title}`);
       
       // Fetch sub-issues for this project
-      console.log(`  📝 Fetching sub-issues for project #${projectNumber}`);
       const subIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/sub_issues`);
-      console.log(`  ✅ Found ${subIssues.length} sub-issues for project #${projectNumber}`);
       
       if (subIssues.length > 0) {
         articlesByProject[projectNumber] = subIssues;
-        subIssues.forEach((subIssue: GitHubIssue, index: number) => {
-          console.log(`    Sub-issue ${index + 1}: #${subIssue.number} - ${subIssue.title}`);
-        });
       } else {
         articlesByProject[projectNumber] = [];
-        console.log(`    No sub-issues found for project #${projectNumber}`);
       }
       
       // Fetch comments for this project
-      console.log(`  💬 Fetching comments for project #${projectNumber}`);
       const comments = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/comments`);
-      console.log(`  ✅ Found ${comments.length} comments for project #${projectNumber}`);
-      console.log(`  Comments data:`, comments);
       
       if (comments.length > 0) {
         commentsByProject[projectNumber] = comments;
-        comments.forEach((comment: GitHubComment, index: number) => {
-          console.log(`    Comment ${index + 1}: by ${comment.user.login} - ${comment.body.substring(0, 50)}...`);
-        });
       } else {
         commentsByProject[projectNumber] = [];
-        console.log(`    No comments found for project #${projectNumber}`);
       }
     }
-    
-    console.log('\n📊 Summary:');
-    console.log('Projects with sub-issues:', Object.keys(articlesByProject).map(projectNum => ({
-      project: projectNum,
-      subIssues: articlesByProject[parseInt(projectNum)].length
-    })));
-    console.log('Projects with comments:', Object.keys(commentsByProject).map(projectNum => ({
-      project: projectNum,
-      comments: commentsByProject[parseInt(projectNum)].length
-    })));
     
     return { projects: projectIssues, articlesByProject, commentsByProject };
   } catch (error) {
@@ -185,13 +129,7 @@ export async function fetchIssueComments(issueNumber: number): Promise<GitHubCom
 // Create a new comment on an issue using user's access token
 export async function createIssueCommentWithToken(issueNumber: number, body: string, accessToken: string): Promise<GitHubComment> {
   try {
-    console.log(`💬 Creating comment on issue #${issueNumber} with user token`);
-    console.log(`📝 Comment content: ${body.substring(0, 100)}${body.length > 100 ? '...' : ''}`);
-    console.log(`🔑 GITHUB_OWNER:`, GITHUB_OWNER);
-    console.log(`🔑 GITHUB_REPO:`, GITHUB_REPO);
-    
     const url = `${GITHUB_API_BASE}/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${issueNumber}/comments`;
-    console.log(`🌐 Making POST request to: ${url}`);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -205,8 +143,6 @@ export async function createIssueCommentWithToken(issueNumber: number, body: str
       body: JSON.stringify({ body })
     });
 
-    console.log(`📊 GitHub API response status: ${response.status}`);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ GitHub API error: ${response.status} - ${errorText}`);
@@ -214,9 +150,6 @@ export async function createIssueCommentWithToken(issueNumber: number, body: str
     }
 
     const comment = await response.json();
-    console.log(`✅ Comment created successfully with ID: ${comment.id}`);
-    console.log(`🔗 Comment URL: ${comment.html_url}`);
-    
     return comment;
   } catch (error) {
     console.error(`❌ Error creating comment on issue ${issueNumber}:`, error);
@@ -228,8 +161,6 @@ export async function createIssueCommentWithToken(issueNumber: number, body: str
 function parseFrontmatter(body: string): {frontmatter: Record<string, unknown>, content: string} {
   if (!body) return { frontmatter: {}, content: '' };
   
-  console.log('Parsing frontmatter from body:', body.substring(0, 200) + '...');
-  
   // Try YAML frontmatter format first (---)
   const yamlFrontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
   const yamlMatch = body.match(yamlFrontmatterRegex);
@@ -237,9 +168,6 @@ function parseFrontmatter(body: string): {frontmatter: Record<string, unknown>, 
   if (yamlMatch) {
     const frontmatterText = yamlMatch[1];
     const content = yamlMatch[2];
-    
-    console.log('YAML frontmatter found:', frontmatterText);
-    console.log('Content after YAML frontmatter:', content.substring(0, 100) + '...');
     
     const frontmatter: Record<string, unknown> = {};
     const lines = frontmatterText.split('\n');
@@ -267,11 +195,8 @@ function parseFrontmatter(body: string): {frontmatter: Record<string, unknown>, 
       }
       
       frontmatter[key] = value;
-      console.log(`Parsed frontmatter key: ${key} = ${value}`);
     }
     
-    console.log('Final frontmatter:', frontmatter);
-    console.log('Final content length:', content.length);
     return { frontmatter, content };
   }
   
@@ -283,9 +208,6 @@ function parseFrontmatter(body: string): {frontmatter: Record<string, unknown>, 
     const frontmatterText = keyValueMatch[0];
     const content = body.substring(frontmatterText.length);
     
-    console.log('Key-value frontmatter found:', frontmatterText);
-    console.log('Content after key-value frontmatter:', content.substring(0, 100) + '...');
-    
     const frontmatter: Record<string, unknown> = {};
     const lines = frontmatterText.split('\n');
     
@@ -312,15 +234,11 @@ function parseFrontmatter(body: string): {frontmatter: Record<string, unknown>, 
       }
       
       frontmatter[key] = value;
-      console.log(`Parsed frontmatter key: ${key} = ${value}`);
     }
     
-    console.log('Final frontmatter:', frontmatter);
-    console.log('Final content length:', content.length);
     return { frontmatter, content };
   }
   
-  console.log('No frontmatter found in body, using entire body as content');
   return { frontmatter: {}, content: body };
 }
 
@@ -357,12 +275,7 @@ function cleanMarkdownForDescription(content: string): string {
 
 // Convert GitHub issue to Project format
 export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, title: string, description: string, thumbnailImage: string, mainImage: string, technologies: string[], status: string, githubUrl: string, liveUrl?: string, comments: unknown[], entries: unknown[]} {
-  console.log(`🔄 Converting project issue #${issue.number}: ${issue.title}`);
-  console.log(`Issue body length: ${issue.body ? issue.body.length : 0}`);
-  
   const { frontmatter, content } = parseFrontmatter(issue.body || '');
-  console.log(`Parsed frontmatter:`, frontmatter);
-  console.log(`Content length: ${content ? content.length : 0}`);
   
   // Create slug from title
   const slug = issue.title
@@ -370,8 +283,6 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, ti
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .trim();
-  
-  console.log(`Generated slug: ${slug}`);
   
   const projectData = {
     id: issue.number.toString(), // Use issue number as ID
@@ -387,7 +298,6 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, ti
     entries: [] // Will be loaded from related issues
   };
 
-  console.log(`✅ Converted project:`, { id: projectData.id, title: projectData.title });
   return projectData;
 }
 
@@ -412,13 +322,8 @@ function extractLiveUrl(body: string): string | undefined {
 }
 
 // Convert GitHub issue to Article format
-export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, title: string, content: string, date: string, image?: string, version?: string, comments: unknown[]} {
-  console.log(`🔄 Converting article issue #${issue.number}: ${issue.title}`);
-  console.log(`Issue body length: ${issue.body ? issue.body.length : 0}`);
-  
+export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, title: string, content: string, date: string, image?: string, version?: string, comments: unknown[], status?: string} {
   const { frontmatter, content } = parseFrontmatter(issue.body || '');
-  console.log(`Parsed frontmatter:`, frontmatter);
-  console.log(`Content length: ${content ? content.length : 0}`);
   
   const article = {
     id: issue.number.toString(), // Use issue number as ID
@@ -427,10 +332,10 @@ export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, ti
     date: (frontmatter.date as string) || issue.created_at,
     image: frontmatter.image as string | undefined,
     version: frontmatter.version as string | undefined,
+    status: (frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : undefined),
     comments: []
   };
   
-  console.log(`✅ Converted article:`, { id: article.id, title: article.title });
   return article;
 }
 

@@ -11,7 +11,9 @@ export default function PortfolioSection() {
   const router = useRouter();
   const { projects, loading, error } = useGitHubProjects();
 
-  const featuredProjects = projects.slice(0, 2);
+  // Filter out completed projects
+  const filteredProjects = projects.filter(project => project.status !== 'completed');
+  const featuredProjects = filteredProjects.slice(0, 2);
 
   return (
     <SectionWrapper width={2} height={1} hasExternalLink={true} onClick={() => router.push('/projects')}>

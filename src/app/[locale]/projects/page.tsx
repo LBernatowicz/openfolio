@@ -15,10 +15,13 @@ export default function ProjectsPage() {
     router.push(`/projects/${projectId}`);
   };
 
+  // Filter out completed projects
+  const filteredProjects = projects.filter(project => project.status !== 'completed');
+  
   // Sort projects by the date of the newest article
-  const sortedProjects = [...projects].sort((a, b) => {
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
     // Get the newest article date for each project
-    const getNewestArticleDate = (project: typeof projects[0]) => {
+    const getNewestArticleDate = (project: typeof filteredProjects[0]) => {
       if (!project.entries || project.entries.length === 0) {
         return 0; // Projects without articles go to the end
       }

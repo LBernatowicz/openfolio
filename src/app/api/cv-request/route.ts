@@ -10,16 +10,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, email, timestamp, userAgent, referrer } = body;
 
-    // Log the CV request
-    console.log('📄 CV REQUEST RECEIVED:');
-    console.log('  Name:', name);
-    console.log('  Email:', email);
-    console.log('  Timestamp:', timestamp);
-    console.log('  User Agent:', userAgent);
-    console.log('  Referrer:', referrer);
-    console.log('  IP Address:', request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown');
-    console.log('---');
-
     // Send notification email to you
     try {
       await sendNotificationEmail({
@@ -30,7 +20,6 @@ export async function POST(request: NextRequest) {
         referrer,
         ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
       });
-      console.log('✅ Notification email sent successfully');
     } catch (emailError) {
       console.error('❌ Failed to send notification email:', emailError);
     }
@@ -38,7 +27,6 @@ export async function POST(request: NextRequest) {
     // Send CV to the requester
     try {
       await sendCVToRequester({ name, email });
-      console.log('✅ CV sent to requester successfully');
     } catch (cvError) {
       console.error('❌ Failed to send CV to requester:', cvError);
     }
