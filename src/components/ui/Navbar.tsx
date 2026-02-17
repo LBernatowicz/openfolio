@@ -86,6 +86,7 @@ export default function Navbar() {
                 <span className="text-lg">{getLanguageFlag()}</span>
               </button>
 
+
               {/* Language dropdown menu */}
               {isLanguageMenuOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden">
