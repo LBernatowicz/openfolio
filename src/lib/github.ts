@@ -97,10 +97,10 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
     console.log('🚀 === FETCHING GITHUB PROJECTS WITH SUB-ISSUES AND COMMENTS ===');
     console.log('Fetching from:', `${GITHUB_OWNER}/${GITHUB_REPO}`);
     
-    // Step 1: Fetch all issues with label "project"
-    console.log('📋 Step 1: Fetching issues with label "project"');
-    const projectIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=all&per_page=100`);
-    console.log(`✅ Found ${projectIssues.length} project issues`);
+    // Step 1: Fetch all open issues with label "project" (closed issues are hidden)
+    console.log('📋 Step 1: Fetching open issues with label "project"');
+    const projectIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=open&per_page=100`);
+    console.log(`✅ Found ${projectIssues.length} open project issues`);
     
     if (projectIssues.length === 0) {
       console.log('❌ No project issues found');
