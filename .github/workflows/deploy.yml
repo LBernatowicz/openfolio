@@ -10,11 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Debug secrets
+        run: |
+          echo "Checking if secrets are set..."
+          if [ -n "${{ secrets.TS_AUTHKEY }}" ]; then
+            echo "TS_AUTHKEY is set"
+          else
+            echo "TS_AUTHKEY is NOT set"
+          fi
+          if [ -n "${{ secrets.RASPBERRY_PI_HOST }}" ]; then
+            echo "RASPBERRY_PI_HOST is set"
+          else
+            echo "RASPBERRY_PI_HOST is NOT set"
+          fi
+
       - name: Setup Tailscale
         uses: tailscale/github-action@v3
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          authkey: ${{ secrets.TS_AUTHKEY }}
 
       - name: Test connection
         run: |
