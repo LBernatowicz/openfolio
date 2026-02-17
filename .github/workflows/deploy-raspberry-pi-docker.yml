@@ -105,34 +105,9 @@ jobs:
         port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
         timeout: 30s
         script: |
-          echo "=========================================="
-          echo "🔍 SSH Connection Verification"
-          echo "=========================================="
           echo "✅ SSH connection successful!"
-          echo ""
-          echo "🖥️  System information:"
-          echo "   OS: $(uname -a)"
-          echo "   Uptime: $(uptime -p)"
-          echo ""
-          echo "🐳 Docker information:"
-          if command -v docker &> /dev/null; then
-            echo "   Docker: $(docker --version)"
-          else
-            echo "   ❌ Docker not found!"
-            exit 1
-          fi
-          if command -v docker-compose &> /dev/null; then
-            echo "   Docker Compose: $(docker-compose --version)"
-          else
-            echo "   ❌ Docker Compose not found!"
-            exit 1
-          fi
-          echo ""
-          echo "📁 Working directory:"
-          echo "   $(pwd)"
-          echo ""
-          echo "✅ SSH verification completed successfully!"
-          echo "=========================================="
+          echo "📍 Connected to: $(hostname)"
+          docker --version && docker-compose --version || echo "⚠️  Docker not found"
           
     - name: ❌ SSH Connection Failed - Troubleshooting
       if: steps.ssh-test.outcome == 'failure'
