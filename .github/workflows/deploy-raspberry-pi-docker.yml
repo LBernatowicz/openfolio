@@ -1,345 +1,58 @@
-name: Deploy to Raspberry Pi (Docker)
+name: Deploy to Raspberry Pi
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   workflow_dispatch:
-  pull_request:
-    branches: [ main, master ]
-    types: [ closed ]
+
+env:
+  APP_DIR: ~/openfolio
 
 jobs:
-  verify-ssh:
-    name: 🔍 Verify SSH Connection
-    runs-on: ubuntu-latest
-    steps:
-    - name: 🔍 Check GitHub Secrets
-      run: |
-        echo "=========================================="
-        echo "🔍 Checking GitHub Secrets Configuration"
-        echo "=========================================="
-        if [ -z "${{ secrets.RASPBERRY_PI_HOST }}" ]; then
-          echo "❌ ERROR: RASPBERRY_PI_HOST is not set!"
-          echo "   Please add RASPBERRY_PI_HOST to GitHub Secrets"
-          exit 1
-        else
-          echo "✅ RASPBERRY_PI_HOST is set"
-        fi
-        
-        if [ -z "${{ secrets.RASPBERRY_PI_USER }}" ]; then
-          echo "❌ ERROR: RASPBERRY_PI_USER is not set!"
-          echo "   Please add RASPBERRY_PI_USER to GitHub Secrets"
-          exit 1
-        else
-          echo "✅ RASPBERRY_PI_USER is set"
-        fi
-        
-        if [ -z "${{ secrets.RASPBERRY_PI_SSH_KEY }}" ]; then
-          echo "❌ ERROR: RASPBERRY_PI_SSH_KEY is not set!"
-          echo "   Please add RASPBERRY_PI_SSH_KEY to GitHub Secrets"
-          exit 1
-        else
-          echo "✅ RASPBERRY_PI_SSH_KEY is set"
-          # Sprawdź format klucza
-          KEY_START=$(echo "${{ secrets.RASPBERRY_PI_SSH_KEY }}" | head -c 50)
-          if echo "$KEY_START" | grep -q "BEGIN.*PRIVATE KEY"; then
-            echo "✅ SSH key format looks correct (private key)"
-          elif echo "$KEY_START" | grep -q "BEGIN SSH2 PUBLIC KEY"; then
-            echo "❌ ERROR: You provided a PUBLIC key instead of PRIVATE key!"
-            echo ""
-            echo "   🔴 Problem: You're using id_ed25519.pub (PUBLIC key)"
-            echo "   ✅ Solution: Use id_ed25519 (PRIVATE key - without .pub)"
-            echo ""
-            echo "   📋 How to fix:"
-            echo "   1. On your local machine, run:"
-            echo "      cat ~/.ssh/id_ed25519"
-            echo ""
-            echo "   2. Copy the ENTIRE output (starts with -----BEGIN OPENSSH PRIVATE KEY-----)"
-            echo ""
-            echo "   3. Paste it into GitHub Secrets → RASPBERRY_PI_SSH_KEY"
-            echo ""
-            echo "   ⚠️  Important:"
-            echo "   - Use id_ed25519 (PRIVATE key) - NOT id_ed25519.pub (PUBLIC key)"
-            echo "   - Private key file: ~/.ssh/id_ed25519"
-            echo "   - Public key file: ~/.ssh/id_ed25519.pub (this is what you're using now - WRONG!)"
-            exit 1
-          elif echo "$KEY_START" | grep -q "^ssh-ed25519"; then
-            echo "❌ ERROR: You provided a PUBLIC key instead of PRIVATE key!"
-            echo ""
-            echo "   🔴 Problem: You're using id_ed25519.pub (PUBLIC key)"
-            echo "   ✅ Solution: Use id_ed25519 (PRIVATE key - without .pub)"
-            echo ""
-            echo "   📋 How to fix:"
-            echo "   1. On your local machine, run:"
-            echo "      cat ~/.ssh/id_ed25519"
-            echo ""
-            echo "   2. Copy the ENTIRE output (starts with -----BEGIN OPENSSH PRIVATE KEY-----)"
-            echo ""
-            echo "   3. Paste it into GitHub Secrets → RASPBERRY_PI_SSH_KEY"
-            echo ""
-            echo "   ⚠️  Important:"
-            echo "   - Use id_ed25519 (PRIVATE key) - NOT id_ed25519.pub (PUBLIC key)"
-            echo "   - Private key file: ~/.ssh/id_ed25519"
-            echo "   - Public key file: ~/.ssh/id_ed25519.pub (this is what you're using now - WRONG!)"
-            exit 1
-          else
-            echo "⚠️  WARNING: SSH key format might be incorrect"
-            echo "   Private key should start with: -----BEGIN OPENSSH PRIVATE KEY-----"
-            echo "   or: -----BEGIN RSA PRIVATE KEY-----"
-          fi
-        fi
-        echo ""
-        echo "📍 Connection details:"
-        echo "   Host: ${{ secrets.RASPBERRY_PI_HOST }}"
-        echo "   User: ${{ secrets.RASPBERRY_PI_USER }}"
-        echo "   Port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}"
-        echo ""
-        
-    - name: 🔍 Test SSH connection
-      uses: appleboy/ssh-action@v1.0.3
-      id: ssh-test
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30s
-        script: |
-          echo "✅ SSH connection successful!"
-          echo "📍 Connected to: $(hostname)"
-          docker --version && docker-compose --version || echo "⚠️  Docker not found"
-          
-    - name: ❌ SSH Connection Failed - Troubleshooting
-      if: steps.ssh-test.outcome == 'failure'
-      run: |
-        echo "=========================================="
-        echo "❌ SSH Connection Failed"
-        echo "=========================================="
-        echo ""
-        echo "🔍 Common issues and solutions:"
-        echo ""
-        echo "1. 'ssh: no key found' error:"
-        echo "   ❌ You provided a PUBLIC key instead of PRIVATE key"
-        echo "   ✅ Solution: Use the PRIVATE key in GitHub Secrets"
-        echo "   📋 Private key starts with: -----BEGIN OPENSSH PRIVATE KEY-----"
-        echo "   📋 Public key starts with: ssh-rsa or -----BEGIN SSH2 PUBLIC KEY-----"
-        echo ""
-        echo "2. 'i/o timeout' error:"
-        echo "   ❌ GitHub Actions cannot reach your Raspberry Pi"
-        echo "   ✅ Solutions:"
-        echo "      - If using local IP (192.168.x.x): Configure port forwarding in router"
-        echo "      - Use Tailscale/ZeroTier VPN for direct access"
-        echo "      - Use public IP address if available"
-        echo ""
-        echo "3. 'Permission denied' error:"
-        echo "   ❌ SSH key is not authorized on Raspberry Pi"
-        echo "   ✅ Solution: Add public key to ~/.ssh/authorized_keys on Raspberry Pi"
-        echo ""
-        echo "📚 For detailed instructions, see: GITHUB-ACTIONS-DEPLOYMENT.md"
-        echo "=========================================="
-        exit 1
-
   deploy:
-    name: 🚀 Deploy Application
-    needs: verify-ssh
+    name: Deploy
     runs-on: ubuntu-latest
-    if: success()
     
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-      
-    - name: 📁 Prepare directory
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30s
-        script: |
-          echo "=========================================="
-          echo "📁 Step 1/6: Preparing directory"
-          echo "=========================================="
-          cd ~/openfolio || (mkdir -p ~/openfolio && cd ~/openfolio && echo "✅ Directory created")
-          echo "✅ Current directory: $(pwd)"
-          echo ""
-          
-    - name: 💾 Backup .env file
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30s
-        script: |
-          echo "=========================================="
-          echo "💾 Step 2/6: Backing up .env file"
-          echo "=========================================="
-          cd ~/openfolio
-          if [ -f .env ]; then
-            cp .env .env.backup
-            echo "✅ .env file backed up"
-          else
-            echo "ℹ️  No .env file found (will be created from template)"
-          fi
-          echo ""
-          
-    - name: 📥 Pull latest code
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 60s
-        script: |
-          echo "=========================================="
-          echo "📥 Step 3/6: Pulling latest code"
-          echo "=========================================="
-          cd ~/openfolio
-          if [ -d .git ]; then
-            echo "📥 Fetching latest changes..."
-            git fetch origin
-            git reset --hard origin/main || git reset --hard origin/master
-            echo "✅ Code updated"
-            echo "📌 Current commit: $(git rev-parse --short HEAD)"
-            echo "📌 Commit message: $(git log -1 --pretty=%B)"
-          else
-            echo "📥 Cloning repository..."
-            git clone https://github.com/${{ github.repository }}.git .
-            echo "✅ Repository cloned"
-          fi
-          echo ""
-          
-    - name: 📋 Setup .env file
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30s
-        script: |
-          echo "=========================================="
-          echo "📋 Step 4/6: Setting up .env file"
-          echo "=========================================="
-          cd ~/openfolio
-          if [ -f .env.backup ]; then
-            cp .env.backup .env
-            rm .env.backup
-            echo "✅ .env file restored from backup"
-          elif [ ! -f .env ] && [ -f env.example ]; then
-            cp env.example .env
-            echo "⚠️  WARNING: .env created from template - please configure it!"
-          else
-            echo "ℹ️  .env file already exists"
-          fi
-          echo ""
-          
-    - name: 🛑 Stop old containers
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 60s
-        script: |
-          echo "=========================================="
-          echo "🛑 Step 5/6: Stopping old containers"
-          echo "=========================================="
-          cd ~/openfolio
-          if [ -f docker-compose.yml ]; then
-            docker-compose down --remove-orphans=false || echo "ℹ️  No containers to stop"
-            echo "✅ Old containers stopped"
-          else
-            echo "⚠️  docker-compose.yml not found"
-          fi
-          echo ""
-          
-    - name: 🔨 Build Docker image
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30m
-        script: |
-          echo "=========================================="
-          echo "🔨 Step 6/6: Building Docker image"
-          echo "=========================================="
-          cd ~/openfolio
-          if [ ! -f docker-compose.yml ]; then
-            echo "❌ ERROR: docker-compose.yml not found!"
-            exit 1
-          fi
-          echo "📦 Building for ARM64 architecture..."
-          if docker-compose build --no-cache; then
-            echo "✅ Docker image built successfully"
-          else
-            echo "❌ ERROR: Docker build failed"
-            echo ""
-            echo "📋 Last 50 lines of build output:"
-            docker-compose build --no-cache 2>&1 | tail -50
-            exit 1
-          fi
-          echo ""
-          
-    - name: ▶️ Start containers
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 60s
-        script: |
-          echo "=========================================="
-          echo "▶️ Starting containers"
-          echo "=========================================="
-          cd ~/openfolio
-          if docker-compose up -d; then
-            echo "✅ Containers started"
-          else
-            echo "❌ ERROR: Failed to start containers"
-            echo ""
-            echo "📋 Container logs:"
-            docker-compose logs --tail=50
-            exit 1
-          fi
-          echo ""
-          
-    - name: ✅ Verify deployment
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.RASPBERRY_PI_HOST }}
-        username: ${{ secrets.RASPBERRY_PI_USER }}
-        key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
-        port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
-        timeout: 30s
-        script: |
-          echo "=========================================="
-          echo "✅ Verifying deployment"
-          echo "=========================================="
-          cd ~/openfolio
-          sleep 5
-          echo "📊 Container status:"
-          docker-compose ps
-          echo ""
-          CONTAINER_STATUS=$(docker ps --filter "name=openfolio-app" --format "{{.Status}}" | head -n 1)
-          if [ -z "$CONTAINER_STATUS" ]; then
-            echo "❌ ERROR: Container 'openfolio-app' is not running!"
-            echo ""
-            echo "📋 Container logs:"
-            docker-compose logs --tail=50 openfolio
-            exit 1
-          else
-            echo "✅ Container is running: $CONTAINER_STATUS"
-          fi
-          echo ""
-          echo "🎉 Deployment completed successfully!"
-          echo "🌐 Application available at: http://${{ secrets.RASPBERRY_PI_HOST }}:80"
-          echo "=========================================="
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.RASPBERRY_PI_HOST }}
+          username: ${{ secrets.RASPBERRY_PI_USER }}
+          key: ${{ secrets.RASPBERRY_PI_SSH_KEY }}
+          port: ${{ secrets.RASPBERRY_PI_PORT || 22 }}
+          command_timeout: 30m
+          script: |
+            set -e
+            
+            echo "=== Deploying OpenFolio ==="
+            
+            # Prepare directory
+            mkdir -p ~/openfolio
+            cd ~/openfolio
+            
+            # Backup .env if exists
+            [ -f .env ] && cp .env .env.backup
+            
+            # Clone or pull
+            if [ -d .git ]; then
+              git fetch origin
+              git reset --hard origin/main
+            else
+              git clone https://github.com/${{ github.repository }}.git .
+            fi
+            
+            # Restore .env
+            [ -f .env.backup ] && mv .env.backup .env
+            [ ! -f .env ] && [ -f env.example ] && cp env.example .env
+            
+            # Deploy with Docker
+            docker compose down --remove-orphans || true
+            docker compose build
+            docker compose up -d
+            
+            # Verify
+            sleep 5
+            docker compose ps
+            
+            echo "=== Deployment complete ==="
