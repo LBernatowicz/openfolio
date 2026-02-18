@@ -349,16 +349,34 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, ti
     .replace(/\s+/g, '-')
     .trim();
   
+  // Ensure technologies is always an array of strings
+  let technologies: string[] = [];
+  if (frontmatter.technologies) {
+    if (Array.isArray(frontmatter.technologies)) {
+      technologies = frontmatter.technologies.map(t => String(t));
+    } else {
+      technologies = [String(frontmatter.technologies)];
+    }
+  } else if (issue.labels && Array.isArray(issue.labels)) {
+    technologies = issue.labels.map(label => String(label.name || label));
+  }
+
+  // Ensure description is always a string
+  const description = cleanMarkdownForDescription(content || issue.body || '');
+  
+  // Ensure title is always a string
+  const title = String((frontmatter.title as string) || issue.title || 'Untitled Project');
+
   const projectData = {
     id: issue.number.toString(), // Use issue number as ID
-    title: (frontmatter.title as string) || issue.title,
-    description: cleanMarkdownForDescription(content || issue.body || ''),
-    thumbnailImage: (frontmatter.thumbnailImage as string) || '/next.svg',
-    mainImage: (frontmatter.mainImage as string) || '/next.svg',
-    technologies: (frontmatter.technologies as string[]) || issue.labels.map(label => label.name),
-    status: (frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : 'in-progress'),
-    githubUrl: issue.html_url,
-    liveUrl: (frontmatter.liveUrl as string) || extractLiveUrl(issue.body),
+    title: title,
+    description: String(description || 'Brak opisu projektu'),
+    thumbnailImage: String((frontmatter.thumbnailImage as string) || '/next.svg'),
+    mainImage: String((frontmatter.mainImage as string) || '/next.svg'),
+    technologies: technologies,
+    status: String((frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : 'in-progress')),
+    githubUrl: String(issue.html_url || ''),
+    liveUrl: frontmatter.liveUrl ? String(frontmatter.liveUrl) : extractLiveUrl(issue.body),
     comments: [], // Will be loaded separately
     entries: [] // Will be loaded from related issues
   };

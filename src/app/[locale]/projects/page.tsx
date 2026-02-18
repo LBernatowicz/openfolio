@@ -115,7 +115,7 @@ export default function ProjectsPage() {
               
               {/* Opis projektu */}
               <p className="text-sm text-gray-300 mb-4 line-clamp-3 leading-relaxed flex-grow">
-                {project.description}
+                {String(project.description || 'Brak opisu')}
               </p>
               
               {/* Dolna sekcja - artykuły, technologie, status i buttony */}
@@ -128,16 +128,16 @@ export default function ProjectsPage() {
                 
                 {/* Technologie */}
                 <div className="flex flex-wrap gap-2">
-                  {project.technologies.slice(0, 3).map((tech) => (
+                  {(Array.isArray(project.technologies) ? project.technologies : []).slice(0, 3).map((tech) => (
                     <span
-                      key={tech}
+                      key={String(tech)}
                       className="flex items-center gap-1 px-2 py-1 bg-slate-700/60 text-slate-200 rounded text-xs font-medium border border-slate-600/30"
                     >
                       <Tag className="w-2 h-2" />
-                      {tech}
+                      {String(tech)}
                     </span>
                   ))}
-                  {project.technologies.length > 3 && (
+                  {Array.isArray(project.technologies) && project.technologies.length > 3 && (
                     <span className="px-2 py-1 text-xs text-gray-400 bg-slate-800/40 rounded border border-slate-700/30">
                       +{project.technologies.length - 3}
                     </span>
