@@ -1,5 +1,4 @@
 // Data source configuration - switch between GitHub and mock data
-import { mockProjects } from '../data/projects';
 
 export const DATA_SOURCE = {
   GITHUB: 'github',
@@ -45,5 +44,5 @@ export function isGitHubAvailable(): boolean {
 
 // Get fallback data when GitHub is not available
 export function getFallbackProjects() {
-  return mockProjects;
+  return [];
 }
