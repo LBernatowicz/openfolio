@@ -15,8 +15,8 @@ export default function ProjectsPage() {
     router.push(`/projects/${projectId}`);
   };
 
-  // Filter out completed projects
-  const filteredProjects = projects.filter(project => project.status !== 'completed');
+  // Show all projects (including completed)
+  const filteredProjects = projects;
   
   // Sort projects by the date of the newest article
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -81,8 +81,16 @@ export default function ProjectsPage() {
           </div>
         )}
 
+        {/* Empty State */}
+        {!loading && !error && sortedProjects.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg mb-2">{t('noProjects') || 'Brak projektów'}</p>
+            <p className="text-gray-500 text-sm">{t('checkGitHub') || 'Sprawdź, czy masz Issues z labelką "project" w repozytorium GitHub'}</p>
+          </div>
+        )}
+
         {/* Projects Grid */}
-        {!loading && !error && (
+        {!loading && !error && sortedProjects.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedProjects.map((project) => (
             <div

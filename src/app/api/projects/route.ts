@@ -21,11 +21,14 @@ export async function GET() {
     // Fetch projects and their sub-issues and comments in one optimized call
     const { projects: projectIssues, articlesByProject, commentsByProject } = await fetchGitHubProjectsWithArticles();
     
-    // If no projects from GitHub, fallback to mock data
+    console.log(`📊 Fetched ${projectIssues.length} projects from GitHub`);
+    
+    // If no projects from GitHub, return empty array
     if (projectIssues.length === 0) {
-      const mockProjects = getFallbackProjects();
-      const response = NextResponse.json(mockProjects);
-      response.headers.set('X-Data-Source', 'mock');
+      console.log('⚠️ No projects found in GitHub, returning empty array');
+      const emptyProjects = getFallbackProjects();
+      const response = NextResponse.json(emptyProjects);
+      response.headers.set('X-Data-Source', 'empty');
       return response;
     }
     
@@ -92,6 +95,7 @@ export async function GET() {
       }
     });
     
+    console.log(`✅ Returning ${projects.length} converted projects`);
     const response = NextResponse.json(projects);
     response.headers.set('X-Data-Source', 'github');
     return response;
