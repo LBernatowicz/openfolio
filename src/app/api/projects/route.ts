@@ -23,12 +23,21 @@ export async function GET() {
     
     console.log(`📊 Fetched ${projectIssues.length} projects from GitHub`);
     
-    // If no projects from GitHub, return empty array
+    // If no projects from GitHub, return empty array with diagnostic info
     if (projectIssues.length === 0) {
       console.log('⚠️ No projects found in GitHub, returning empty array');
       const emptyProjects = getFallbackProjects();
-      const response = NextResponse.json(emptyProjects);
-      response.headers.set('X-Data-Source', 'empty');
+      const response = NextResponse.json(emptyProjects, {
+        headers: {
+          'X-Data-Source': 'empty',
+          'X-Debug-Info': JSON.stringify({
+            githubOwner: process.env.NEXT_PUBLIC_GITHUB_USERNAME || 'NOT SET',
+            githubRepo: process.env.NEXT_PUBLIC_GITHUB_REPO || 'NOT SET',
+            hasToken: !!process.env.GITHUB_TOKEN,
+            nodeEnv: process.env.NODE_ENV
+          })
+        }
+      });
       return response;
     }
     

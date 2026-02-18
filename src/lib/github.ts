@@ -74,10 +74,13 @@ async function fetchGitHubAPI(endpoint: string) {
     // Log more details for debugging
     if (response.status === 404) {
       console.error(`   ℹ️  Endpoint not found - this might be expected for some endpoints (e.g., /sub_issues)`);
+      console.error(`   📍 Requested: ${GITHUB_OWNER}/${GITHUB_REPO}`);
     } else if (response.status === 401 || response.status === 403) {
       console.error(`   ⚠️  Authentication error - check GITHUB_TOKEN permissions`);
+      console.error(`   🔑 Token exists: ${!!GITHUB_TOKEN}, length: ${GITHUB_TOKEN?.length || 0}`);
     } else if (response.status === 422) {
       console.error(`   ⚠️  Validation error - check request parameters`);
+      console.error(`   📍 Requested: ${GITHUB_OWNER}/${GITHUB_REPO}`);
     }
     
     // Return empty array instead of throwing error
@@ -105,12 +108,28 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
     
     if (projectIssues.length === 0) {
       console.log('⚠️ No open issues found with label "project"');
+      console.log(`📍 Checking repo: ${GITHUB_OWNER}/${GITHUB_REPO}`);
+      console.log(`🔑 Token exists: ${!!GITHUB_TOKEN}`);
+      
       // Try fetching open issues to see if any exist
       const allIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?state=open&per_page=10`);
-      console.log(`📋 Total issues in repo: ${allIssues.length}`);
+      console.log(`📋 Total open issues in repo: ${allIssues.length}`);
+      
       if (allIssues.length > 0) {
         console.log(`🏷️  First issue labels:`, allIssues[0]?.labels?.map((l: {name: string}) => l.name) || []);
+        console.log(`📝 First issue title: ${allIssues[0]?.title || 'N/A'}`);
+        console.log(`🔍 Looking for label "project" in all issues...`);
+        
+        // Check if any issues have the "project" label
+        const issuesWithProjectLabel = allIssues.filter((issue: GitHubIssue) => 
+          issue.labels?.some((label: {name: string}) => label.name.toLowerCase() === 'project')
+        );
+        console.log(`✅ Found ${issuesWithProjectLabel.length} issues with "project" label (but they might be closed)`);
+      } else {
+        console.log(`⚠️  No open issues found at all in repo ${GITHUB_OWNER}/${GITHUB_REPO}`);
+        console.log(`💡 Check if repo name is correct and if issues exist`);
       }
+      
       return { projects: [], articlesByProject: {}, commentsByProject: {} };
     }
     
