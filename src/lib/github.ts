@@ -70,6 +70,16 @@ async function fetchGitHubAPI(endpoint: string) {
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`❌ GitHub API error for ${endpoint}: ${response.status} - ${errorText}`);
+    
+    // Log more details for debugging
+    if (response.status === 404) {
+      console.error(`   ℹ️  Endpoint not found - this might be expected for some endpoints (e.g., /sub_issues)`);
+    } else if (response.status === 401 || response.status === 403) {
+      console.error(`   ⚠️  Authentication error - check GITHUB_TOKEN permissions`);
+    } else if (response.status === 422) {
+      console.error(`   ⚠️  Validation error - check request parameters`);
+    }
+    
     // Return empty array instead of throwing error
     return [];
   }
@@ -85,8 +95,8 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
     console.log(`🔍 Fetching projects from: ${GITHUB_OWNER}/${GITHUB_REPO}`);
     console.log(`🔑 GITHUB_TOKEN exists: ${!!GITHUB_TOKEN}`);
     
-    // Step 1: Fetch all issues with label "project"
-    const endpoint = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=all&per_page=100`;
+    // Step 1: Fetch open issues with label "project" (exclude closed issues)
+    const endpoint = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=open&per_page=100`;
     console.log(`📡 Calling GitHub API: ${endpoint}`);
     
     const projectIssues = await fetchGitHubAPI(endpoint);
@@ -94,9 +104,9 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
     console.log(`📦 Received ${projectIssues.length} issues from GitHub`);
     
     if (projectIssues.length === 0) {
-      console.log('⚠️ No issues found with label "project"');
-      // Try fetching all issues to see if any exist
-      const allIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?state=all&per_page=10`);
+      console.log('⚠️ No open issues found with label "project"');
+      // Try fetching open issues to see if any exist
+      const allIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?state=open&per_page=10`);
       console.log(`📋 Total issues in repo: ${allIssues.length}`);
       if (allIssues.length > 0) {
         console.log(`🏷️  First issue labels:`, allIssues[0]?.labels?.map((l: {name: string}) => l.name) || []);
@@ -113,19 +123,40 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
       console.log(`📄 Processing project #${projectNumber}: ${project.title}`);
       
       // Fetch sub-issues for this project
-      // Note: sub_issues endpoint might not be available, we'll try it but handle errors gracefully
+      // Note: sub_issues endpoint might not be available in standard GitHub API
+      // We'll try it, but if it fails, we'll use an alternative approach
+      let subIssues: GitHubIssue[] = [];
+      
       try {
-        const subIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/sub_issues`);
-        console.log(`  📝 Found ${subIssues.length} sub-issues for project #${projectNumber}`);
-        if (subIssues.length > 0) {
-          articlesByProject[projectNumber] = subIssues;
+        const subIssuesResponse = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/sub_issues`);
+        if (Array.isArray(subIssuesResponse) && subIssuesResponse.length > 0) {
+          subIssues = subIssuesResponse;
+          console.log(`  📝 Found ${subIssues.length} sub-issues via API for project #${projectNumber}`);
         } else {
-          articlesByProject[projectNumber] = [];
+          console.log(`  📝 No sub-issues found via API for project #${projectNumber}`);
         }
       } catch (subIssueError) {
-        console.log(`  ⚠️ Could not fetch sub-issues for project #${projectNumber}:`, subIssueError);
-        articlesByProject[projectNumber] = [];
+        console.log(`  ⚠️ Sub-issues endpoint not available for project #${projectNumber}, trying alternative...`);
+        // Alternative: Fetch open issues with label "article" and check if they reference this project
+        // This is a fallback if sub_issues endpoint doesn't work
+        try {
+          const allArticles = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=article&state=open&per_page=100`);
+          if (Array.isArray(allArticles)) {
+            // Filter articles that might be related to this project
+            // You can customize this logic based on your naming convention
+            subIssues = allArticles.filter((article: GitHubIssue) => {
+              // Check if article body or title references the project
+              const projectRef = `#${projectNumber}`;
+              return article.body?.includes(projectRef) || article.title?.includes(projectRef);
+            });
+            console.log(`  📝 Found ${subIssues.length} related articles for project #${projectNumber}`);
+          }
+        } catch (altError) {
+          console.log(`  ⚠️ Alternative method also failed for project #${projectNumber}`);
+        }
       }
+      
+      articlesByProject[projectNumber] = subIssues;
       
       // Fetch comments for this project
       try {
