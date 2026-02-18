@@ -282,6 +282,7 @@
     "loadingArticle": "Loading article...",
     "loadingError": "Error loading projects:",
     "checkGitHub": "Check GitHub API configuration",
+    "noProjects": "No projects",
     "notFound": "Project not found",
     "searchedProject": "Searched project:",
     "availableProjects": "Available projects:",

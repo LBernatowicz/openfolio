@@ -47,12 +47,18 @@ const GITHUB_API_BASE = 'https://api.github.com';
 async function fetchGitHubAPI(endpoint: string) {
   if (!GITHUB_TOKEN) {
     console.warn('⚠️ GITHUB_TOKEN is not set. GitHub API calls will likely fail.');
-    console.warn('🔧 Please check your .env.local file for GITHUB_TOKEN');
+    console.warn('🔧 Please check your environment variables:');
+    console.warn('   - Local: .env.local file');
+    console.warn('   - Production (Vercel): Settings → Environment Variables');
+    console.warn('   - Production (Docker): .env file or docker-compose.yml');
     // Return empty array instead of throwing error
     return [];
   }
 
-  const response = await fetch(`${GITHUB_API_BASE}${endpoint}`, {
+  const url = `${GITHUB_API_BASE}${endpoint}`;
+  console.log(`🌐 Fetching: ${url}`);
+
+  const response = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${GITHUB_TOKEN}`,
       'Accept': 'application/vnd.github+json',
@@ -63,22 +69,38 @@ async function fetchGitHubAPI(endpoint: string) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`GitHub API error for ${endpoint}: ${response.status} - ${errorText}`);
+    console.error(`❌ GitHub API error for ${endpoint}: ${response.status} - ${errorText}`);
     // Return empty array instead of throwing error
     return [];
   }
 
   const data = await response.json();
+  console.log(`✅ Successfully fetched data from ${endpoint} (${Array.isArray(data) ? data.length : 1} items)`);
   return data;
 }
 
 // Fetch projects with their sub-issues and comments from GitHub
 export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: GitHubIssue[], articlesByProject: { [projectNumber: number]: GitHubIssue[] }, commentsByProject: { [projectNumber: number]: GitHubComment[] } }> {
   try {
+    console.log(`🔍 Fetching projects from: ${GITHUB_OWNER}/${GITHUB_REPO}`);
+    console.log(`🔑 GITHUB_TOKEN exists: ${!!GITHUB_TOKEN}`);
+    
     // Step 1: Fetch all issues with label "project"
-    const projectIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=all&per_page=100`);
+    const endpoint = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=project&state=all&per_page=100`;
+    console.log(`📡 Calling GitHub API: ${endpoint}`);
+    
+    const projectIssues = await fetchGitHubAPI(endpoint);
+    
+    console.log(`📦 Received ${projectIssues.length} issues from GitHub`);
     
     if (projectIssues.length === 0) {
+      console.log('⚠️ No issues found with label "project"');
+      // Try fetching all issues to see if any exist
+      const allIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?state=all&per_page=10`);
+      console.log(`📋 Total issues in repo: ${allIssues.length}`);
+      if (allIssues.length > 0) {
+        console.log(`🏷️  First issue labels:`, allIssues[0]?.labels?.map((l: {name: string}) => l.name) || []);
+      }
       return { projects: [], articlesByProject: {}, commentsByProject: {} };
     }
     
@@ -88,22 +110,34 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
     
     for (const project of projectIssues) {
       const projectNumber = project.number;
+      console.log(`📄 Processing project #${projectNumber}: ${project.title}`);
       
       // Fetch sub-issues for this project
-      const subIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/sub_issues`);
-      
-      if (subIssues.length > 0) {
-        articlesByProject[projectNumber] = subIssues;
-      } else {
+      // Note: sub_issues endpoint might not be available, we'll try it but handle errors gracefully
+      try {
+        const subIssues = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/sub_issues`);
+        console.log(`  📝 Found ${subIssues.length} sub-issues for project #${projectNumber}`);
+        if (subIssues.length > 0) {
+          articlesByProject[projectNumber] = subIssues;
+        } else {
+          articlesByProject[projectNumber] = [];
+        }
+      } catch (subIssueError) {
+        console.log(`  ⚠️ Could not fetch sub-issues for project #${projectNumber}:`, subIssueError);
         articlesByProject[projectNumber] = [];
       }
       
       // Fetch comments for this project
-      const comments = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/comments`);
-      
-      if (comments.length > 0) {
-        commentsByProject[projectNumber] = comments;
-      } else {
+      try {
+        const comments = await fetchGitHubAPI(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues/${projectNumber}/comments`);
+        console.log(`  💬 Found ${comments.length} comments for project #${projectNumber}`);
+        if (comments.length > 0) {
+          commentsByProject[projectNumber] = comments;
+        } else {
+          commentsByProject[projectNumber] = [];
+        }
+      } catch (commentError) {
+        console.log(`  ⚠️ Could not fetch comments for project #${projectNumber}:`, commentError);
         commentsByProject[projectNumber] = [];
       }
     }

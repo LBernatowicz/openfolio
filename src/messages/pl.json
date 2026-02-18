@@ -283,6 +283,7 @@
     "loadingArticle": "Ładowanie artykułu...",
     "loadingError": "Błąd ładowania projektów:",
     "checkGitHub": "Sprawdź konfigurację GitHub API",
+    "noProjects": "Brak projektów",
     "notFound": "Projekt nie znaleziony",
     "searchedProject": "Szukany projekt:",
     "availableProjects": "Dostępne projekty:",
