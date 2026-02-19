@@ -417,19 +417,22 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, ti
 function extractLiveUrl(body: string): string | undefined {
   if (!body) return undefined;
   
-  // Look for common URL patterns
-  const urlPatterns = [
-    /(?:live|demo|url|link):\s*(https?:\/\/[^\s]+)/i,
-    /(?:https?:\/\/[^\s]+)/g
-  ];
+  // Remove markdown images first to avoid matching image URLs
+  let cleanedBody = body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '');
   
-  for (const pattern of urlPatterns) {
-    const match = body.match(pattern);
-    if (match) {
-      return match[1] || match[0];
+  // Look for explicit URL patterns (live:, demo:, url:, link:)
+  const explicitPattern = /(?:live|demo|url|link):\s*(https?:\/\/[^\s\)]+)/i;
+  const match = cleanedBody.match(explicitPattern);
+  
+  if (match) {
+    const url = match[1] || match[0];
+    // Exclude common image file extensions
+    if (!/\.(jpg|jpeg|png|gif|svg|webp|bmp|ico)(\?|$)/i.test(url)) {
+      return url;
     }
   }
   
+  // Don't extract random URLs - only explicit ones
   return undefined;
 }
 

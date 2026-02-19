@@ -7,7 +7,7 @@ import { useGitHubProjects } from "@/hooks/useGitHubData";
 import { Project, Comment } from "@/types/section";
 import CommentSection from "@/components/ui/CommentSection";
 import MarkdownRenderer from "@/components/ui/MarkdownRenderer";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import { useTranslations } from 'next-intl';
 
 interface ProjectDetailPageProps {
@@ -24,9 +24,31 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const [project, setProject] = useState<Project | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState<string>('192px'); // max-h-48 = 192px
   
   // Unwrap params Promise
   const { id } = use(params);
+  
+  // Update max height when expanded or content changes
+  useEffect(() => {
+    if (descriptionRef.current) {
+      if (isDescriptionExpanded) {
+        // Set to actual height for smooth animation
+        const height = descriptionRef.current.scrollHeight;
+        setMaxHeight(`${height}px`);
+        // Recalculate after a short delay to ensure images are loaded
+        setTimeout(() => {
+          if (descriptionRef.current) {
+            const newHeight = descriptionRef.current.scrollHeight;
+            setMaxHeight(`${newHeight}px`);
+          }
+        }, 100);
+      } else {
+        setMaxHeight('192px');
+      }
+    }
+  }, [isDescriptionExpanded, project?.content, project?.description]);
 
   useEffect(() => {
     if (projects.length > 0) {
@@ -291,12 +313,27 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
                 {/* Project Description */}
                 <div className="text-gray-200 text-xl leading-relaxed mb-8">
-                  <div className={isDescriptionExpanded ? '' : 'max-h-48 overflow-hidden'}>
+                  <div 
+                    ref={descriptionRef}
+                    className="overflow-hidden transition-[max-height] duration-500 ease-in-out"
+                    style={{ 
+                      maxHeight: isDescriptionExpanded ? (maxHeight === '192px' ? '2000px' : maxHeight) : '192px'
+                    }}
+                  >
                     <MarkdownRenderer content={project.content || project.description} />
                   </div>
                   {(project.content || project.description) && (project.content || project.description).length > 500 && (
                     <button
-                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      onClick={() => {
+                        setIsDescriptionExpanded(!isDescriptionExpanded);
+                        // Recalculate height after state change
+                        setTimeout(() => {
+                          if (descriptionRef.current && !isDescriptionExpanded) {
+                            const height = descriptionRef.current.scrollHeight;
+                            setMaxHeight(`${height}px`);
+                          }
+                        }, 10);
+                      }}
                       className="mt-4 text-sm text-blue-400 hover:text-blue-300 flex items-center gap-2 transition-colors duration-200"
                     >
                       {isDescriptionExpanded ? (

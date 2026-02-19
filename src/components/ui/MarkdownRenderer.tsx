@@ -150,7 +150,15 @@ export default function MarkdownRenderer({ content, className = "", firstParagra
             <img 
               src={src} 
               alt={alt} 
-              className="rounded-lg border border-slate-700 max-w-full h-auto mb-4" 
+              className="rounded-lg border border-slate-700 mb-4 block mx-auto" 
+              style={{ 
+                maxWidth: '100%',
+                maxHeight: '600px',
+                height: 'auto',
+                width: 'auto',
+                objectFit: 'contain',
+                display: 'block'
+              }}
             />
           ),
         }}
