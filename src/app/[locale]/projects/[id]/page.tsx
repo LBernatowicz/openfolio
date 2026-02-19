@@ -291,11 +291,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
                 {/* Project Description */}
                 <div className="text-gray-200 text-xl leading-relaxed mb-8">
-                  <div className={isDescriptionExpanded ? '' : 'max-h-96 overflow-hidden relative'}>
+                  <div className={isDescriptionExpanded ? '' : 'max-h-48 overflow-hidden'}>
                     <MarkdownRenderer content={project.content || project.description} />
-                    {!isDescriptionExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none"></div>
-                    )}
                   </div>
                   {(project.content || project.description) && (project.content || project.description).length > 500 && (
                     <button
