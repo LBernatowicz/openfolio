@@ -81,48 +81,6 @@ export function useProjectComments(projectId: string) {
     }
   }, [projectId]);
 
-  // Auto-send pending comment when user logs in
-  useEffect(() => {
-    if (session?.accessToken) {
-      // Check for pending comment in localStorage
-      const storedPendingComment = localStorage.getItem('pendingComment');
-      if (storedPendingComment) {
-        try {
-          const { content, parentId, url } = JSON.parse(storedPendingComment);
-          
-          // Only send if we're on the same page
-          if (window.location.pathname === url) {
-            addComment(content, parentId)
-              .then(() => {
-                localStorage.removeItem('pendingComment');
-              })
-              .catch((err) => {
-                console.error('Failed to send stored pending comment:', err);
-                localStorage.removeItem('pendingComment');
-              });
-          } else {
-            localStorage.removeItem('pendingComment');
-          }
-        } catch (err) {
-          console.error('Error parsing stored pending comment:', err);
-          localStorage.removeItem('pendingComment');
-        }
-      }
-      
-      // Also handle hook-level pending comment
-      if (pendingComment) {
-        addComment(pendingComment.content, pendingComment.parentId)
-          .then(() => {
-            setPendingComment(null);
-          })
-          .catch((err) => {
-            console.error('Failed to send pending comment:', err);
-            setPendingComment(null);
-          });
-      }
-    }
-  }, [session?.accessToken, pendingComment]);
-
   const addComment = useCallback(async (content: string, parentId?: string) => {
     try {
       // If GitHub is not available, add comment locally
@@ -172,6 +130,48 @@ export function useProjectComments(projectId: string) {
       throw err;
     }
   }, [projectId, session?.accessToken]);
+
+  // Auto-send pending comment when user logs in
+  useEffect(() => {
+    if (session?.accessToken) {
+      // Check for pending comment in localStorage
+      const storedPendingComment = localStorage.getItem('pendingComment');
+      if (storedPendingComment) {
+        try {
+          const { content, parentId, url } = JSON.parse(storedPendingComment);
+          
+          // Only send if we're on the same page
+          if (window.location.pathname === url) {
+            addComment(content, parentId)
+              .then(() => {
+                localStorage.removeItem('pendingComment');
+              })
+              .catch((err) => {
+                console.error('Failed to send stored pending comment:', err);
+                localStorage.removeItem('pendingComment');
+              });
+          } else {
+            localStorage.removeItem('pendingComment');
+          }
+        } catch (err) {
+          console.error('Error parsing stored pending comment:', err);
+          localStorage.removeItem('pendingComment');
+        }
+      }
+      
+      // Also handle hook-level pending comment
+      if (pendingComment) {
+        addComment(pendingComment.content, pendingComment.parentId)
+          .then(() => {
+            setPendingComment(null);
+          })
+          .catch((err) => {
+            console.error('Failed to send pending comment:', err);
+            setPendingComment(null);
+          });
+      }
+    }
+  }, [session?.accessToken, pendingComment, addComment]);
 
   const likeComment = (commentId: string) => {
     // GitHub doesn't have native likes, but we can simulate it locally

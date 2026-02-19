@@ -154,7 +154,7 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
         } else {
           console.log(`  📝 No sub-issues found via API for project #${projectNumber}`);
         }
-      } catch (subIssueError) {
+      } catch {
         console.log(`  ⚠️ Sub-issues endpoint not available for project #${projectNumber}, trying alternative...`);
         // Alternative: Fetch open issues with label "article" and check if they reference this project
         // This is a fallback if sub_issues endpoint doesn't work
@@ -170,7 +170,7 @@ export async function fetchGitHubProjectsWithArticles(): Promise<{ projects: Git
             });
             console.log(`  📝 Found ${subIssues.length} related articles for project #${projectNumber}`);
           }
-        } catch (altError) {
+        } catch {
           console.log(`  ⚠️ Alternative method also failed for project #${projectNumber}`);
         }
       }
@@ -361,13 +361,6 @@ function cleanMarkdownForDescription(content: string): string {
 export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, title: string, description: string, content?: string, thumbnailImage: string, mainImage: string, technologies: string[], status: string, githubUrl: string, liveUrl?: string, comments: unknown[], entries: unknown[]} {
   const { frontmatter, content } = parseFrontmatter(issue.body || '');
   
-  // Create slug from title
-  const slug = issue.title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .trim();
-  
   // Ensure technologies is always an array of strings
   let technologies: string[] = [];
   if (frontmatter.technologies) {
@@ -418,7 +411,7 @@ function extractLiveUrl(body: string): string | undefined {
   if (!body) return undefined;
   
   // Remove markdown images first to avoid matching image URLs
-  let cleanedBody = body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '');
+  const cleanedBody = body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '');
   
   // Look for explicit URL patterns (live:, demo:, url:, link:)
   const explicitPattern = /(?:live|demo|url|link):\s*(https?:\/\/[^\s\)]+)/i;
