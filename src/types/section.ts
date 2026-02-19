@@ -33,7 +33,8 @@ export interface Comment {
 export interface Project {
   id: string;
   title: string;
-  description: string;
+  description: string; // Short description for list view
+  content?: string; // Full content for detail page
   thumbnailImage: string;
   mainImage: string;
   entries: ProjectEntry[];

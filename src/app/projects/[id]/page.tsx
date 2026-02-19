@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag, Clock } from "lucide-react";
+import { ArrowLeft, Code, ExternalLink, Github, Calendar, Tag, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useGitHubProjects } from "../../../hooks/useGitHubData";
@@ -21,6 +21,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { projects, loading: projectsLoading } = useGitHubProjects();
   const [project, setProject] = useState<Project | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
   // Unwrap params Promise
   const { id } = use(params);
@@ -176,19 +177,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-4">
-                    {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white rounded-lg transition-colors duration-200 border border-white/20"
-                      >
-                        <Github className="w-5 h-5" />
-                        <span>GitHub</span>
-                      </a>
-                    )}
-                    {project.liveUrl && (
+                  {project.liveUrl && (
+                    <div className="flex items-center gap-4">
                       <a
                         href={project.liveUrl}
                         target="_blank"
@@ -196,15 +186,38 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600/80 backdrop-blur-sm hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
                       >
                         <ExternalLink className="w-5 h-5" />
-                        <span>Live Demo</span>
+                        <span>Zobacz projekt</span>
                       </a>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Project Description */}
                 <div className="text-gray-200 text-xl leading-relaxed mb-8">
-                  <MarkdownRenderer content={project.description} />
+                  <div className={isDescriptionExpanded ? '' : 'max-h-96 overflow-hidden relative'}>
+                    <MarkdownRenderer content={project.content || project.description} />
+                    {!isDescriptionExpanded && (
+                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none"></div>
+                    )}
+                  </div>
+                  {(project.content || project.description) && (project.content || project.description).length > 500 && (
+                    <button
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="mt-4 text-sm text-blue-400 hover:text-blue-300 flex items-center gap-2 transition-colors duration-200"
+                    >
+                      {isDescriptionExpanded ? (
+                        <>
+                          <ChevronUp className="w-4 h-4" />
+                          <span>Zwiń opis</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4" />
+                          <span>Zobacz pełny opis</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {/* Technologies */}

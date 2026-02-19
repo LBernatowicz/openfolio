@@ -358,7 +358,7 @@ function cleanMarkdownForDescription(content: string): string {
 }
 
 // Convert GitHub issue to Project format
-export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, title: string, description: string, thumbnailImage: string, mainImage: string, technologies: string[], status: string, githubUrl: string, liveUrl?: string, comments: unknown[], entries: unknown[]} {
+export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, title: string, description: string, content?: string, thumbnailImage: string, mainImage: string, technologies: string[], status: string, githubUrl: string, liveUrl?: string, comments: unknown[], entries: unknown[]} {
   const { frontmatter, content } = parseFrontmatter(issue.body || '');
   
   // Create slug from title
@@ -380,22 +380,32 @@ export function convertGitHubIssueToProject(issue: GitHubIssue): {id: string, ti
     technologies = issue.labels.map(label => String(label.name || label));
   }
 
-  // Ensure description is always a string
+  // Ensure description is always a string (short version for list view)
   const description = cleanMarkdownForDescription(content || issue.body || '');
+  
+  // Full content for detail page (without frontmatter, but with all markdown)
+  const fullContent = content || issue.body || '';
   
   // Ensure title is always a string
   const title = String((frontmatter.title as string) || issue.title || 'Untitled Project');
+
+  // Handle link field - if "link" exists in frontmatter, use it as liveUrl
+  // Priority: frontmatter.link > frontmatter.liveUrl > extracted from body
+  const projectLink = frontmatter.link 
+    ? String(frontmatter.link) 
+    : (frontmatter.liveUrl ? String(frontmatter.liveUrl) : extractLiveUrl(issue.body));
 
   const projectData = {
     id: issue.number.toString(), // Use issue number as ID
     title: title,
     description: String(description || 'Brak opisu projektu'),
+    content: fullContent, // Full content for detail page
     thumbnailImage: String((frontmatter.thumbnailImage as string) || '/next.svg'),
     mainImage: String((frontmatter.mainImage as string) || '/next.svg'),
     technologies: technologies,
     status: String((frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : 'in-progress')),
     githubUrl: String(issue.html_url || ''),
-    liveUrl: frontmatter.liveUrl ? String(frontmatter.liveUrl) : extractLiveUrl(issue.body),
+    liveUrl: projectLink,
     comments: [], // Will be loaded separately
     entries: [] // Will be loaded from related issues
   };

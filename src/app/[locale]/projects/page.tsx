@@ -146,18 +146,7 @@ export default function ProjectsPage() {
 
                 {/* Action Links */}
                 <div className="flex items-center gap-2">
-                  {project.githubUrl && (
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 px-2 py-1 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white rounded text-xs font-medium transition-colors duration-200"
-                    >
-                      <Github className="w-3 h-3" />
-                      <span>GitHub</span>
-                    </a>
-                  )}
+                  {/* Only show link if liveUrl exists (from "link" field) */}
                   {project.liveUrl && (
                     <a
                       href={project.liveUrl}
@@ -167,7 +156,7 @@ export default function ProjectsPage() {
                       className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 hover:text-blue-300 rounded text-xs font-medium transition-colors duration-200"
                     >
                       <ExternalLink className="w-3 h-3" />
-                      <span>Live</span>
+                      <span>Zobacz projekt</span>
                     </a>
                   )}
                 </div>
