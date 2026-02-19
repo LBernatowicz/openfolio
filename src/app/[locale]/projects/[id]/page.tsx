@@ -24,6 +24,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const [project, setProject] = useState<Project | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isExpanding, setIsExpanding] = useState(false);
   const descriptionRef = useRef<HTMLDivElement>(null);
   const [maxHeight, setMaxHeight] = useState<string>('192px'); // max-h-48 = 192px
   
@@ -34,6 +35,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   useEffect(() => {
     if (descriptionRef.current) {
       if (isDescriptionExpanded) {
+        setIsExpanding(true);
         // Set to actual height for smooth animation
         const height = descriptionRef.current.scrollHeight;
         setMaxHeight(`${height}px`);
@@ -43,9 +45,12 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             const newHeight = descriptionRef.current.scrollHeight;
             setMaxHeight(`${newHeight}px`);
           }
+          // Reset expanding state after animation
+          setTimeout(() => setIsExpanding(false), 500);
         }, 100);
       } else {
         setMaxHeight('192px');
+        setIsExpanding(false);
       }
     }
   }, [isDescriptionExpanded, project?.content, project?.description]);
@@ -320,7 +325,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                       maxHeight: isDescriptionExpanded ? (maxHeight === '192px' ? '2000px' : maxHeight) : '192px'
                     }}
                   >
-                    <MarkdownRenderer content={project.content || project.description} />
+                    <MarkdownRenderer 
+                      content={project.content || project.description} 
+                      isExpanding={isExpanding}
+                    />
                   </div>
                   {(project.content || project.description) && (project.content || project.description).length > 500 && (
                     <button

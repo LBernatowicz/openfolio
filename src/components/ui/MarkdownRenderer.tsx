@@ -8,9 +8,10 @@ interface MarkdownRendererProps {
   content: string;
   className?: string;
   firstParagraphRef?: React.RefObject<HTMLParagraphElement | null>;
+  isExpanding?: boolean;
 }
 
-export default function MarkdownRenderer({ content, className = "", firstParagraphRef }: MarkdownRendererProps) {
+export default function MarkdownRenderer({ content, className = "", firstParagraphRef, isExpanding = false }: MarkdownRendererProps) {
   let isFirstParagraph = true;
   
   return (
@@ -150,14 +151,15 @@ export default function MarkdownRenderer({ content, className = "", firstParagra
             <img 
               src={src} 
               alt={alt} 
-              className="rounded-lg border border-slate-700 mb-4 block mx-auto" 
+              className="rounded-lg border border-slate-700 mb-4 block mx-auto transition-opacity duration-500" 
               style={{ 
                 maxWidth: '100%',
                 maxHeight: '600px',
                 height: 'auto',
                 width: 'auto',
                 objectFit: 'contain',
-                display: 'block'
+                display: 'block',
+                opacity: isExpanding ? 0.5 : 1
               }}
             />
           ),
