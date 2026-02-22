@@ -430,16 +430,18 @@ function extractLiveUrl(body: string): string | undefined {
 }
 
 // Convert GitHub issue to Article format
-export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, title: string, content: string, date: string, image?: string, version?: string, comments: unknown[], status?: string} {
+export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, title: string, content: string, date: string, image?: string, version?: string, githubUrl?: string, changelogUrl?: string, comments: unknown[], status?: string} {
   const { frontmatter, content } = parseFrontmatter(issue.body || '');
   
   const article = {
     id: issue.number.toString(), // Use issue number as ID
     title: (frontmatter.title as string) || issue.title,
     content: content || issue.body || '',
-    date: (frontmatter.date as string) || issue.created_at,
+    date: (frontmatter.date as string) || (frontmatter.Date as string) || issue.created_at,
     image: frontmatter.image as string | undefined,
-    version: frontmatter.version as string | undefined,
+    version: (frontmatter.version as string) || (frontmatter.Version as string) || undefined,
+    githubUrl: (frontmatter.githubUrl as string) || (frontmatter.github as string) || (frontmatter.GitHub as string) || issue.html_url,
+    changelogUrl: (frontmatter.changelogUrl as string) || (frontmatter.changelog as string) || (frontmatter.Changelog as string) || undefined,
     status: (frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : undefined),
     comments: []
   };

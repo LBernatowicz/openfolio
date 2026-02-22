@@ -59,17 +59,23 @@ export async function GET() {
           const projectArticles = articlesByProject[projectNumber]
             .map(convertGitHubIssueToArticle)
             .sort((a, b) => {
-              // Sort by version first (highest first)
-              const versionA = a.version || '0.0.0';
-              const versionB = b.version || '0.0.0';
+              // Articles without version go to the end
+              if (!a.version && !b.version) {
+                // Both without version - sort by date (newest first)
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                return dateB - dateA;
+              }
+              if (!a.version) return 1; // a goes to end
+              if (!b.version) return -1; // b goes to end
               
-              // Parse version strings (e.g., "2.0.0" -> [2, 0, 0])
+              // Both have versions - sort by version (highest first)
               const parseVersion = (version: string) => {
                 return version.split('.').map(num => parseInt(num) || 0);
               };
               
-              const versionPartsA = parseVersion(versionA);
-              const versionPartsB = parseVersion(versionB);
+              const versionPartsA = parseVersion(a.version);
+              const versionPartsB = parseVersion(b.version);
               
               // Compare major, minor, patch versions
               for (let i = 0; i < Math.max(versionPartsA.length, versionPartsB.length); i++) {

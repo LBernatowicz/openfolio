@@ -15,6 +15,8 @@ export interface ProjectEntry {
   date: string;
   image?: string;
   version?: string;
+  githubUrl?: string;
+  changelogUrl?: string;
   comments: Comment[];
   status?: 'completed' | 'in-progress' | 'planned';
 }

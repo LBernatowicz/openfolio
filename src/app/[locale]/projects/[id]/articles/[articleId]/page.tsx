@@ -334,7 +334,9 @@ export default function ArticlePage({ params }: ArticlePageProps) {
             </button>
             
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 text-sm font-mono">v{String(getArticleIndex()).padStart(2, '0')}.0.0</span>
+              <span className="text-slate-400 text-sm font-mono">
+                {article.version ? `v${article.version}` : `v${String(getArticleIndex()).padStart(2, '0')}.0.0`}
+              </span>
               <span className="text-slate-600">|</span>
               <span className="text-white font-semibold">{article.title}</span>
             </div>
@@ -362,7 +364,15 @@ export default function ArticlePage({ params }: ArticlePageProps) {
           <div className="relative z-10 p-8 sm:p-12 lg:p-16">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-slate-300 text-sm font-mono">{tArticle('changelogFile')}</span>
+              <span className="text-slate-300 text-sm font-mono">
+                {article.changelogUrl ? (
+                  <a href={article.changelogUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
+                    {article.changelogUrl.split('/').pop() || 'CHANGELOG.md'}
+                  </a>
+                ) : (
+                  tArticle('changelogFile')
+                )}
+              </span>
             </div>
             
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
@@ -374,10 +384,12 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 <Clock className="w-4 h-4" />
                 <span>{formatDate(article.date)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span>{tArticle('articleNumber')}{getArticleIndex()}</span>
-              </div>
+              {article.version && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span className="font-mono">v{article.version}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -449,11 +461,21 @@ export default function ArticlePage({ params }: ArticlePageProps) {
 
                 <div className="bg-slate-800/50 rounded-lg p-4">
                   <p className="text-sm text-gray-400 mb-2">
-                    <strong>Data publikacji:</strong> {formatDate(article.date)}
+                    <strong>{tArticle('publicationDate')}</strong> {formatDate(article.date)}
                   </p>
-                  <p className="text-sm text-gray-400">
-                    <strong>Wersja:</strong> v{String(getArticleIndex()).padStart(2, '0')}.0.0
-                  </p>
+                  {article.version && (
+                    <p className="text-sm text-gray-400 mb-2">
+                      <strong>{tArticle('version')}</strong> v{article.version}
+                    </p>
+                  )}
+                  {article.changelogUrl && (
+                    <p className="text-sm text-gray-400 mb-2">
+                      <strong>Changelog:</strong>{' '}
+                      <a href={article.changelogUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                        {article.changelogUrl.split('/').pop() || 'CHANGELOG.md'}
+                      </a>
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -471,15 +493,26 @@ export default function ArticlePage({ params }: ArticlePageProps) {
           </button>
           
           <div className="flex items-center gap-4">
-            {project.githubUrl && (
+            {(article.githubUrl || project.githubUrl) && (
               <a
-                href={project.githubUrl}
+                href={article.githubUrl || project.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>GitHub</span>
+              </a>
+            )}
+            {article.changelogUrl && (
+              <a
+                href={article.changelogUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Changelog</span>
               </a>
             )}
             {project.liveUrl && (
