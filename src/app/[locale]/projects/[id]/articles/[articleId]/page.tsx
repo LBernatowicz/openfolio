@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, ExternalLink } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { useEffect, useRef, useState, use, useCallback } from "react";
@@ -205,6 +205,19 @@ export default function ArticlePage({ params }: ArticlePageProps) {
     return project.entries.findIndex(e => e.id === articleId) + 1;
   };
 
+  // Get previous and next articles
+  // Articles are sorted from newest (index 0) to oldest (last index)
+  // Previous = older article (higher index)
+  // Next = newer article (lower index)
+  const getPreviousNextArticles = () => {
+    const currentIndex = project.entries.findIndex(e => e.id === articleId);
+    const previousArticle = currentIndex < project.entries.length - 1 ? project.entries[currentIndex + 1] : null;
+    const nextArticle = currentIndex > 0 ? project.entries[currentIndex - 1] : null;
+    return { previousArticle, nextArticle };
+  };
+
+  const { previousArticle, nextArticle } = getPreviousNextArticles();
+
   const handleAddComment = async (content: string, parentId?: string, isAnonymous?: boolean, displayName?: string) => {
     try {
       console.log('Adding comment:', content, parentId, isAnonymous, displayName);
@@ -367,10 +380,10 @@ export default function ArticlePage({ params }: ArticlePageProps) {
               <span className="text-slate-300 text-sm font-mono">
                 {article.changelogUrl ? (
                   <a href={article.changelogUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">
-                    {article.changelogUrl.split('/').pop() || 'CHANGELOG.md'}
+                    {article.changelogUrl.split('/').pop() || project.title}
                   </a>
                 ) : (
-                  tArticle('changelogFile')
+                  project.title
                 )}
               </span>
             </div>
@@ -472,7 +485,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                     <p className="text-sm text-gray-400 mb-2">
                       <strong>Changelog:</strong>{' '}
                       <a href={article.changelogUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
-                        {article.changelogUrl.split('/').pop() || 'CHANGELOG.md'}
+                        {article.changelogUrl.split('/').pop() || project.title}
                       </a>
                     </p>
                   )}
@@ -483,22 +496,43 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         </div>
 
         {/* Navigation */}
-        <div className="mt-12 flex justify-between items-center">
+        <div className="mt-12 flex items-center gap-4 flex-wrap">
           <button
             onClick={() => router.push(`/projects/${id}`)}
-            className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
+            className="flex items-center gap-2 px-6 py-3 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Powrót do projektu</span>
           </button>
+
+          {/* Previous Article Navigation */}
+          {project.entries.length > 1 && previousArticle && (
+            <button
+              onClick={() => router.push(`/projects/${id}/articles/${previousArticle.id}`)}
+              className="flex items-center gap-2 px-6 py-3 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Poprzedni artykuł</span>
+            </button>
+          )}
           
-          <div className="flex items-center gap-4">
-            {(article.githubUrl || project.githubUrl) && (
+          <div className="flex items-center gap-4 ml-auto">
+            {/* Next Article Navigation */}
+            {project.entries.length > 1 && nextArticle && (
+              <button
+                onClick={() => router.push(`/projects/${id}/articles/${nextArticle.id}`)}
+                className="flex items-center gap-2 px-6 py-3 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
+              >
+                <span>Następny artykuł</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+            {article.githubUrl && (
               <a
-                href={article.githubUrl || project.githubUrl}
+                href={article.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
+                className="flex items-center gap-2 px-6 py-3 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors duration-200"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>GitHub</span>
@@ -509,7 +543,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 href={article.changelogUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
+                className="flex items-center gap-2 px-6 py-3 h-12 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>Changelog</span>
@@ -520,7 +554,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                className="flex items-center gap-2 px-6 py-3 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>Live Demo</span>

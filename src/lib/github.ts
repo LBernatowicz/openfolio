@@ -440,7 +440,7 @@ export function convertGitHubIssueToArticle(issue: GitHubIssue): {id: string, ti
     date: (frontmatter.date as string) || (frontmatter.Date as string) || issue.created_at,
     image: frontmatter.image as string | undefined,
     version: (frontmatter.version as string) || (frontmatter.Version as string) || undefined,
-    githubUrl: (frontmatter.githubUrl as string) || (frontmatter.github as string) || (frontmatter.GitHub as string) || issue.html_url,
+    githubUrl: (frontmatter.githubUrl as string) || (frontmatter.github as string) || (frontmatter.GitHub as string) || undefined,
     changelogUrl: (frontmatter.changelogUrl as string) || (frontmatter.changelog as string) || (frontmatter.Changelog as string) || undefined,
     status: (frontmatter.status as string) || (issue.state === 'closed' ? 'completed' : undefined),
     comments: []
