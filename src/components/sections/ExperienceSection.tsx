@@ -9,6 +9,24 @@ export default function ExperienceSection() {
   const t = useTranslations('experience');
   const router = useRouter();
 
+  const latestExperiences = [
+    {
+      title: t('jobs.position7.title'),
+      company: t('jobs.position7.company'),
+      period: t('jobs.position7.period'),
+    },
+    {
+      title: t('jobs.position6.title'),
+      company: t('jobs.position6.company'),
+      period: t('jobs.position6.period'),
+    },
+    {
+      title: t('jobs.position5.title'),
+      company: t('jobs.position5.company'),
+      period: t('jobs.position5.period'),
+    },
+  ];
+
   const handleClick = () => {
     router.push('/experience');
   };
@@ -23,18 +41,14 @@ export default function ExperienceSection() {
           <ExternalLink className="w-5 h-5 flex-shrink-0" />
         </div>
         <div className="space-y-4">
-          <div className="border-l-2 border-blue-500 pl-4">
-            <h3 className="font-semibold text-white">{t('softwareEngineer')}</h3>
-            <p className="text-gray-400 text-sm">Straico • 2021 - {t('current')}</p>
-          </div>
-          <div className="border-l-2 border-blue-500 pl-4">
-            <h3 className="font-semibold text-white">{t('softwareEngineer')}</h3>
-            <p className="text-gray-400 text-sm">Spot2 • 2021 - {t('current')}</p>
-          </div>
-          <div className="border-l-2 border-blue-500 pl-4">
-            <h3 className="font-semibold text-white">{t('frontendDeveloper')}</h3>
-            <p className="text-gray-400 text-sm">Imaginamos • 2021 - 2021</p>
-          </div>
+          {latestExperiences.map((experience) => (
+            <div key={experience.company} className="border-l-2 border-blue-500 pl-4">
+              <h3 className="font-semibold text-white">{experience.title}</h3>
+              <p className="text-gray-400 text-sm">
+                {experience.company} • {experience.period}
+              </p>
+            </div>
+          ))}
         </div>
         <div className="text-center pt-3">
           <span className="text-xs text-gray-400 font-medium">
