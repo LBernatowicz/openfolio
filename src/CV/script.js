@@ -16,14 +16,19 @@ const puppeteer = require('puppeteer');
     // 3. Ustawienia wyglądu jak w przeglądarce
     await page.emulateMediaType('screen');
 
-    // 4. Generowanie PDF do tego samego folderu (src/CV) na standardowych stronach A4
+    // 4. Wyliczenie wysokości całego dokumentu, żeby mieć jedną długą stronę
+    const scrollHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+    const pxPerMm = 96 / 25.4; // standardowe DPI w Chrome
+    const heightMm = scrollHeight / pxPerMm + 10; // mały zapas na dole
+
+    // 5. Generowanie PDF do tego samego folderu (src/CV) jako jedna długa strona (bez podziału na strony)
     const outputPath = path.resolve(__dirname, 'Lukasz_Bernatowicz_CV.pdf');
 
     await page.pdf({
         path: outputPath,
-        format: 'A4',
-        printBackground: true,     // zachowanie kolorów i tła
-        preferCSSPageSize: true,   // użyj rozmiaru z CSS (210mm x 297mm)
+        width: '210mm',
+        height: `${heightMm}mm`,
+        printBackground: true,
         margin: {
             top: '0px',
             right: '0px',
