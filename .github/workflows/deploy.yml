@@ -8,15 +8,20 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Debug secrets
         run: |
           echo "Checking if secrets are set..."
-          if [ -n "${{ secrets.TS_AUTHKEY }}" ]; then
-            echo "TS_AUTHKEY is set"
+          if [ -n "${{ secrets.TS_OAUTH_CLIENT_ID }}" ]; then
+            echo "TS_OAUTH_CLIENT_ID is set"
           else
-            echo "TS_AUTHKEY is NOT set"
+            echo "TS_OAUTH_CLIENT_ID is NOT set"
+          fi
+          if [ -n "${{ secrets.TS_OAUTH_SECRET }}" ]; then
+            echo "TS_OAUTH_SECRET is set"
+          else
+            echo "TS_OAUTH_SECRET is NOT set"
           fi
           if [ -n "${{ secrets.RASPBERRY_PI_HOST }}" ]; then
             echo "RASPBERRY_PI_HOST is set"
@@ -27,7 +32,9 @@ jobs:
       - name: Setup Tailscale
         uses: tailscale/github-action@v4
         with:
-          authkey: ${{ secrets.TS_AUTHKEY }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
           # Czeka do ~3 min na łączność z Pi – bez tego SSH często dostaje timeout
           ping: ${{ secrets.RASPBERRY_PI_HOST }}
 

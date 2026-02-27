@@ -368,9 +368,23 @@ W przypadku problemów:
   Nie używaj lokalnego IP z LAN (np. 192.168.x.x) – runner GitHub nie ma do niego dostępu.
 - Na Raspberry Pi: upewnij się, że Tailscale działa (`tailscale status`) i że firewall zezwala na SSH z sieci Tailscale (np. `sudo ufw allow from 100.64.0.0/10 to any port 22` albo zezwól na interfejs `tailscale0`).
 
-### Ostrzeżenie „authkey has been deprecated”
+### Konfiguracja OAuth (zamiast authkey)
 
-- Tailscale zaleca przejście na **OAuth client** lub **federated identity**. Auth key nadal działa, ale w dłuższej perspektywie warto skonfigurować OAuth:
-  - [Tailscale OAuth clients](https://tailscale.com/s/oauth-clients)
-  - W workflow zamiast `authkey` użyj `oauth-client-id` i `oauth-secret` (lub federated identity z `audience`).
-  - Dla federated identity dodaj w workflow: `permissions: id-token: write`.
+Workflow używa **OAuth client** (bez ostrzeżenia o deprecacji). Potrzebne sekrety w GitHubie:
+
+| Secret | Opis |
+|--------|------|
+| `TS_OAUTH_CLIENT_ID` | Client ID z Tailscale OAuth client |
+| `TS_OAUTH_SECRET` | Client secret z Tailscale OAuth client |
+| `RASPBERRY_PI_HOST` | Hostname lub IP Tailscale Pi (np. `raspberrypi` lub `100.x.x.x`) |
+| `RASPBERRY_PI_USER` | Użytkownik SSH na Pi |
+| `RASPBERRY_PI_SSH_KEY` | Prywatny klucz SSH do deployu |
+
+**Kroki w Tailscale:**
+
+1. Wejdź na [Tailscale OAuth clients](https://tailscale.com/s/oauth-clients) i utwórz nowy OAuth client.
+2. Nadaj mu zakres (scope) **`auth_keys`** (read & write) – potrzebny do tworzenia ephemeral nodes.
+3. W **Tags** ustaw tag używany w workflow, np. `tag:ci` (tag musi być wcześniej utworzony w Admin → Access controls → Tags).
+4. Skopiuj **Client ID** i **Client secret**.
+5. W repozytorium GitHub: **Settings → Secrets and variables → Actions** → dodaj sekrety `TS_OAUTH_CLIENT_ID` i `TS_OAUTH_SECRET`.
+6. W **Access controls** (ACL) w Tailscale upewnij się, że urządzenia z tagiem `tag:ci` mają prawo łączyć się z Twoim Raspberry Pi (np. w `"acls"` dodaj regułę dla tego tagu).
