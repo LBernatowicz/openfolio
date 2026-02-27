@@ -354,3 +354,23 @@ W przypadku problemów:
 ## Wolumeny
 
 - `./logs:/app/logs` - Logi aplikacji
+
+---
+
+## GitHub Actions + Tailscale (deploy na Raspberry Pi)
+
+### SSH: „Connection timed out” (port 22)
+
+- **Workflow został zaktualizowany**: używana jest akcja `tailscale/github-action@v4` z parametrem **`ping`**. Akcja czeka do ~3 minut na łączność z Pi przed próbą SSH, co zwykle usuwa timeout.
+- **`RASPBERRY_PI_HOST`** w GitHub Secrets **musi** być adresem w sieci Tailscale:
+  - hostname w tailnecie (np. `raspberrypi`, `mypi`) **albo**
+  - adres IP Tailscale (100.x.x.x).
+  Nie używaj lokalnego IP z LAN (np. 192.168.x.x) – runner GitHub nie ma do niego dostępu.
+- Na Raspberry Pi: upewnij się, że Tailscale działa (`tailscale status`) i że firewall zezwala na SSH z sieci Tailscale (np. `sudo ufw allow from 100.64.0.0/10 to any port 22` albo zezwól na interfejs `tailscale0`).
+
+### Ostrzeżenie „authkey has been deprecated”
+
+- Tailscale zaleca przejście na **OAuth client** lub **federated identity**. Auth key nadal działa, ale w dłuższej perspektywie warto skonfigurować OAuth:
+  - [Tailscale OAuth clients](https://tailscale.com/s/oauth-clients)
+  - W workflow zamiast `authkey` użyj `oauth-client-id` i `oauth-secret` (lub federated identity z `audience`).
+  - Dla federated identity dodaj w workflow: `permissions: id-token: write`.
