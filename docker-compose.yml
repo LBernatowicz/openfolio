@@ -1,10 +1,12 @@
+version: '3.8'
+
 services:
   openfolio:
     build: .
     container_name: openfolio-app
     restart: unless-stopped
     ports:
-      - "3131:3000"
+      - "80:3000"
     env_file:
       - .env
     environment:
@@ -28,6 +30,7 @@ services:
       - ./logs:/app/logs
     networks:
       - openfolio-network
+
 
 networks:
   openfolio-network:

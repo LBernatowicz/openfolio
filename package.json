@@ -26,6 +26,7 @@
     "next": "15.5.3",
     "next-auth": "^4.24.11",
     "next-intl": "^4.3.12",
+    "puppeteer": "^24.37.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-markdown": "^9.0.1",
