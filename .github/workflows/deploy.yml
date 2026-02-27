@@ -25,12 +25,15 @@ jobs:
           fi
 
       - name: Setup Tailscale
-        uses: tailscale/github-action@v3
+        uses: tailscale/github-action@v4
         with:
           authkey: ${{ secrets.TS_AUTHKEY }}
+          # Czeka do ~3 min na łączność z Pi – bez tego SSH często dostaje timeout
+          ping: ${{ secrets.RASPBERRY_PI_HOST }}
 
       - name: Test connection
         run: |
+          tailscale status
           ping -c 3 ${{ secrets.RASPBERRY_PI_HOST }} || echo "Ping failed (might be blocked)"
           
       - name: Deploy via SSH
